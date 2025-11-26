@@ -1,0 +1,22 @@
+:root{
+  --bg:#0f1724;
+  --card:#0b1220;
+  --accent:#7dd3fc;
+  --muted:#94a3b8;
+}
+*{box-sizing:border-box;font-family:Inter,Segoe UI,Arial,sans-serif}
+body{margin:0;background:linear-gradient(180deg,var(--bg),#071024);color:#e6eef8;min-height:100vh}
+.centered{display:grid;place-items:center}
+.card{background:rgba(255,255,255,0.03);padding:28px;border-radius:12px;max-width:680px;text-align:center}
+.topbar{display:flex;gap:12px;padding:12px}
+.home-link{color:var(--accent);text-decoration:none}
+.game-container{display:flex;gap:18px;align-items:center;justify-content:center;padding:40px}
+.player{flex:1;background:rgba(255,255,255,0.02);padding:18px;border-radius:10px;text-align:center}
+.player h2{margin:0 0 8px}
+.roll{font-size:32px;padding:18px;background:rgba(255,255,255,0.02);border-radius:8px;margin-bottom:8px}
+.score{font-weight:700;font-size:20px;color:var(--accent)}
+.controls{display:flex;flex-direction:column;align-items:center;gap:12px}
+.btn{display:inline-block;padding:10px 16px;border-radius:10px;background:var(--accent);color:#032; text-decoration:none;border:none;cursor:pointer}
+.btn.large{padding:16px 24px;font-size:18px}
+.result{color:var(--muted)}
+.buttons{display:flex;gap:10px;justify-content:center;margin-top:12px}

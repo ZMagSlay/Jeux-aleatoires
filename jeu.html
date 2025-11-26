@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Roll 1–10000 — Partie</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <a href="index.html" class="home-link">← Accueil</a>
+    <a href="scores.html" class="home-link">Scores</a>
+  </header>
+
+  <main class="game-container">
+    <section class="player player-left">
+      <h2>Joueur 1</h2>
+      <div class="roll" id="left-roll">—</div>
+      <div class="score" id="left-score">0</div>
+    </section>
+
+    <section class="controls">
+      <button id="play-btn" class="btn large">Jouer</button>
+      <div id="result" class="result">Appuie sur <strong>Jouer</strong></div>
+    </section>
+
+    <section class="player player-right">
+      <h2>Joueur 2</h2>
+      <div class="roll" id="right-roll">—</div>
+      <div class="score" id="right-score">0</div>
+    </section>
+  </main>
+
+  <script src="logique.js"></script>
+</body>
+</html>
