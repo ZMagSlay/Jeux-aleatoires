@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Mode 2 — Roll</title>
+  <title>Mode 1 — Roll</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -11,28 +11,30 @@
 <header class="topbar">
   <a href="index.html" class="home-link">← Accueil</a>
 </header>
-<div class="player-header">
-  <span class="player-name" id="name-left">Joueur 1</span>
-  <span class="money" id="money-left">💰 0</span>
-</div>
-<a class="btn small" href="gacha.html?player=1">🎰 Gacha</a>
-<a class="btn small" href="inventory.html?player=1">📦 Fonts</a>
 
-<div class="player-header">
-  <span class="player-name" id="name-right">Joueur 2</span>
-  <span class="money" id="money-right">💰 0</span>
+<!-- En-têtes joueurs — sans noms top-left, uniquement solde + boutons popup -->
+<div style="display:flex;gap:12px;align-items:center;justify-content:space-between;padding:8px 18px;">
+  <div style="display:flex;gap:8px;align-items:center">
+    <span class="money" id="money-left">💰 0</span>
+    <button class="btn small" onclick="openGacha(1)">🎰 Gacha (popup)</button>
+    <button class="btn small" onclick="openInventory(1)">📦 Fonts (popup)</button>
+  </div>
+
+  <div style="display:flex;gap:8px;align-items:center">
+    <span class="money" id="money-right">💰 0</span>
+    <button class="btn small" onclick="openGacha(2)">🎰 Gacha (popup)</button>
+    <button class="btn small" onclick="openInventory(2)">📦 Fonts (popup)</button>
+  </div>
 </div>
-<button class="btn small" onclick="openGacha(2)">🎰 Gacha</button>
-<button class="btn small" onclick="openInventory(2)">📦 Fonts</button>
 
 <main class="game-container">
 
   <!-- Joueur gauche -->
   <section class="player player-left" id="player-left">
-
     <div class="player-top">
       <span class="crown" id="left-crown">👑</span>
-      <input id="left-name-input" class="name-input">
+      <!-- le champ de nom est la cible des fonts equipées -->
+      <input id="left-name-input" class="name-input" placeholder="Joueur 1">
     </div>
 
     <div class="roll-line">
@@ -47,7 +49,7 @@
     </label>
   </section>
 
-  <!-- Bouton -->
+  <!-- Bouton central -->
   <section class="controls">
     <button id="play-btn" class="btn large">Jouer</button>
     <div id="result" class="result">Prêt ?</div>
@@ -60,10 +62,9 @@
 
   <!-- Joueur droit -->
   <section class="player player-right" id="player-right">
-
     <div class="player-top">
       <span class="crown" id="right-crown">👑</span>
-      <input id="right-name-input" class="name-input">
+      <input id="right-name-input" class="name-input" placeholder="Joueur 2">
     </div>
 
     <div class="roll-line">
@@ -80,6 +81,8 @@
   </section>
 
 </main>
+
+<!-- popup partagé (utilisé par openGacha/openInventory) -->
 <div id="popup" class="popup hidden">
   <div class="popup-content">
     <h2 id="popup-title"></h2>
@@ -88,7 +91,12 @@
   </div>
 </div>
 
+<!-- NB constant (mode 1) -->
 <script> const NB = 2; </script>
+
+<!-- charger d'abord gacha_pages (expose addMoney/openGacha/openInventory/equipFont/applyFonts) -->
+<script src="gacha_pages.js"></script>
+<!-- logique_multi gère aussi le mode 1 (NB=1) -->
 <script src="logique_multi.js"></script>
 
 </body>

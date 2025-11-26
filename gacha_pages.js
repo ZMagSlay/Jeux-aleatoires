@@ -238,41 +238,89 @@
     }
   };
 
-  window.openInventory = function(player){
-    ensureStorage();
-    const inv = getInv(player);
-    if (!inv || inv.length === 0){
-      showPopup('Inventaire', '<p>Aucun item obtenu.</p>');
-      return;
-    }
+  // remplace l'actuelle openInventory par celle-ci
+window.openInventory = function(player){
+  ensureStorage();
+  const inv = getInv(player);
+  if (!inv || inv.length === 0){
+    showPopup('Inventaire', '<p>Aucun item obtenu.</p>');
+    return;
+  }
 
-    let html = `<div style="display:flex;flex-direction:column;gap:8px;align-items:center">`;
-    inv.forEach((f, idx)=>{
-      html += `
-        <div style="display:flex;gap:8px;align-items:center;min-width:250px;justify-content:space-between">
-          <div style="min-width:120px;font-weight:700;font-family:${f.css}">${f.name}</div>
-          <div><button class="btn small" data-idx="${idx}" data-player="${player}">Équiper</button></div>
-        </div>`;
+  // récupère la font actuellement équipée pour ce joueur
+  const equippedCss = localStorage.getItem('font' + player) || 'default';
+
+  // construit le html : on ajoute un badge "Équipé" et un container pour mettre à jour dynamiquement
+  let html = `<div style="display:flex;flex-direction:column;gap:10px;align-items:stretch;max-width:420px">`;
+  inv.forEach((f, idx)=>{
+    const isEquipped = (f.css === equippedCss);
+    html += `
+      <div class="inv-row" data-idx="${idx}" data-player="${player}" 
+           style="display:flex;justify-content:space-between;align-items:center;padding:8px;border-radius:8px;">
+        <div style="display:flex;gap:8px;align-items:center">
+          <div style="min-width:140px;font-weight:700;font-family:${f.css}">${f.name}</div>
+          <div style="color:var(--muted);font-size:12px">${f.rarity || ''}</div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <button class="btn small equip-btn" data-idx="${idx}" data-player="${player}">Équiper</button>
+          <div class="equipped-badge" style="font-weight:700;color:lightgreen;display:${isEquipped ? 'block' : 'none'}">Équipé</div>
+        </div>
+      </div>
+    `;
+  });
+  html += `</div>`;
+
+  // affiche la popup (ne contient pas de bouton fermer supplémentaire)
+  showPopup(`Inventaire — Joueur ${player}`, html);
+
+  // attache handlers : équiper sans fermer, mise à jour du badge et de la page
+  const popupBody = document.getElementById('popup-body');
+  if (!popupBody) return;
+
+  // fonction utilitaire pour rafraîchir les badges "Équipé" dans la popup
+  function refreshPopupBadges(newCss){
+    const rows = popupBody.querySelectorAll('.inv-row');
+    rows.forEach(row=>{
+      const idx = Number(row.getAttribute('data-idx'));
+      const f = inv[idx];
+      const badge = row.querySelector('.equipped-badge');
+      if (!badge) return;
+      if (f && f.css === newCss) badge.style.display = 'block';
+      else badge.style.display = 'none';
     });
-    html += `</div>`;
+  }
 
-    showPopup(`Inventaire — Joueur ${player}`, html);
+  // attacher tous les boutons equip-btn
+  const btns = Array.from(popupBody.querySelectorAll('button.equip-btn'));
+  btns.forEach(btn=>{
+    btn.addEventListener('click', (e)=>{
+      const idx = Number(btn.getAttribute('data-idx'));
+      const pl = Number(btn.getAttribute('data-player'));
+      const item = inv[idx];
+      if (!item) return;
+      // équipe la font (utilise la fonction globale existante)
+      equipFont(pl, idx); // equip by index
+      // affiche confirmation dans la popup (sans fermer)
+      const confirmMsg = document.createElement('div');
+      confirmMsg.style.marginTop = '8px';
+      confirmMsg.style.color = 'lightgreen';
+      confirmMsg.textContent = `Font "${item.name}" équipée ✅`;
+      // supprimer d'éventuels vieux messages de confirmation
+      const old = popupBody.querySelector('.equip-confirm');
+      if (old) old.remove();
+      confirmMsg.className = 'equip-confirm';
+      popupBody.appendChild(confirmMsg);
 
-    // attach handlers
-    const buttons = Array.from(document.querySelectorAll('#popup-body button[data-idx]'));
-    buttons.forEach(btn=>{
-      btn.addEventListener('click', (e)=>{
-        const idx = Number(btn.getAttribute('data-idx'));
-        const pl = Number(btn.getAttribute('data-player'));
-        equipFont(pl, idx);
-        // update popup text to show confirmation
-        const b = document.getElementById('popup-body');
-        if (b) b.innerHTML += `<div style="margin-top:8px;color:lightgreen">Équipé ✅</div>`;
-        // refresh quick inv display
-        refreshInPageQuickInv(pl);
-      });
+      // rafraîchir badges pour indiquer l'item équipé
+      refreshPopupBadges(item.css);
+
+      // rafraîchir l'affichage en page (inputs noms, quick-inv, etc.)
+      if (typeof window.applyFonts === 'function') window.applyFonts();
+      refreshInPageQuickInv(pl);
     });
-  };
+  });
+};
+
 
   /* ---------- quick-inv & helpers ---------- */
   function refreshQuickInvOnPage(player, quickInvEl){
