@@ -1,22 +1,244 @@
 :root{
-  --bg:#0f1724;
-  --card:#0b1220;
-  --accent:#7dd3fc;
-  --muted:#94a3b8;
+  --bg: #071024;
+  --card: rgba(255,255,255,0.03);
+  --accent: #7dd3fc;
+  --muted: #94a3b8;
+  --glass: rgba(255,255,255,0.04);
+  --glass-2: rgba(255,255,255,0.02);
+  --soft-radius: 12px;
+  --shadow: 0 6px 20px rgba(2,6,23,0.6);
 }
-*{box-sizing:border-box;font-family:Inter,Segoe UI,Arial,sans-serif}
-body{margin:0;background:linear-gradient(180deg,var(--bg),#071024);color:#e6eef8;min-height:100vh}
-.centered{display:grid;place-items:center}
-.card{background:rgba(255,255,255,0.03);padding:28px;border-radius:12px;max-width:680px;text-align:center}
-.topbar{display:flex;gap:12px;padding:12px}
-.home-link{color:var(--accent);text-decoration:none}
-.game-container{display:flex;gap:18px;align-items:center;justify-content:center;padding:40px}
-.player{flex:1;background:rgba(255,255,255,0.02);padding:18px;border-radius:10px;text-align:center}
-.player h2{margin:0 0 8px}
-.roll{font-size:32px;padding:18px;background:rgba(255,255,255,0.02);border-radius:8px;margin-bottom:8px}
-.score{font-weight:700;font-size:20px;color:var(--accent)}
-.controls{display:flex;flex-direction:column;align-items:center;gap:12px}
-.btn{display:inline-block;padding:10px 16px;border-radius:10px;background:var(--accent);color:#032; text-decoration:none;border:none;cursor:pointer}
-.btn.large{padding:16px 24px;font-size:18px}
-.result{color:var(--muted)}
-.buttons{display:flex;gap:10px;justify-content:center;margin-top:12px}
+
+*{box-sizing:border-box;font-family:Inter, "Segoe UI", Arial, sans-serif}
+html,body{height:100%}
+body{
+  margin:0;
+  background: linear-gradient(180deg,var(--bg),#04101a 60%);
+  color:#e6eef8;
+  min-height:100vh;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  padding-bottom:40px;
+}
+
+.topbar{
+  display:flex;
+  gap:12px;
+  padding:14px 18px;
+  align-items:center;
+  background: linear-gradient(90deg, rgba(255,255,255,0.02), transparent);
+  box-shadow: var(--shadow);
+}
+.home-link{
+  color:var(--accent);
+  text-decoration:none;
+  font-weight:600;
+  padding:6px 10px;
+  border-radius:8px;
+}
+.home-link:hover{opacity:0.9; transform:translateY(-1px)}
+
+.game-container{
+  display:flex;
+  gap:20px;
+  align-items:start;
+  justify-content:center;
+  padding:36px;
+  max-width:1100px;
+  margin: 18px auto;
+}
+
+/* player card */
+.player{
+  position:relative;
+  flex:1 1 280px;
+  background:var(--glass-2);
+  padding:18px;
+  border-radius:var(--soft-radius);
+  text-align:center;
+  box-shadow: 0 8px 30px rgba(2,6,23,0.45);
+  transition:transform .18s ease, box-shadow .18s ease;
+  min-width:220px;
+}
+.player:hover{ transform: translateY(-6px) }
+
+/* top row inside player: crown & name */
+.player-top{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  margin-bottom:12px;
+  position:relative;
+}
+.crown{
+  font-size:22px;
+  opacity:0;
+  transform:translateY(-4px) scale(0.9);
+  transition:opacity .18s ease, transform .18s ease;
+  margin-right:4px;
+}
+.crown.visible{ opacity:1; transform:translateY(0) scale(1.05) }
+
+/* name input (styled to look like a label) */
+.name-input{
+  background:transparent;
+  border:none;
+  border-bottom:2px solid transparent;
+  font-size:18px;
+  font-weight:700;
+  color:var(--accent);
+  text-align:center;
+  padding:6px 8px;
+  outline:none;
+  max-width:160px;
+}
+.name-input:focus{
+  border-bottom-color: rgba(255,255,255,0.08);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.4) inset;
+  border-radius:6px;
+}
+
+.roll {
+  width: 80px;           /* largeur fixe  (augmente si tu veux) */
+  height: 60px;          /* hauteur fixe */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: #ffffff10;
+  border-radius: 10px;
+  font-size: 1.8rem;      /* taille adaptée */
+  font-weight: bold;
+
+  overflow: hidden;       /* empêche le texte de sortir */
+  text-overflow: clip;    /* aucune déformation */
+  white-space: nowrap;    /* reste sur une seule ligne */
+}
+
+
+/* score */
+.score{
+  font-weight:800;
+  font-size:22px;
+  color:var(--accent);
+  margin-bottom:8px;
+}
+
+/* small inline controls on player */
+.controls-inline{
+  margin-top:10px;
+}
+.color-label{
+  font-size:12px;
+  color:var(--muted);
+  display:inline-flex;
+  gap:8px;
+  align-items:center;
+}
+.color-input{
+  width:36px;
+  height:28px;
+  border:none;
+  padding:0;
+  background:none;
+  cursor:pointer;
+  -webkit-appearance:none !important;
+  appearance:none;
+}
+
+/* central controls */
+.controls{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:12px;
+}
+.btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding:10px 16px;
+  border-radius:12px;
+  background:var(--accent);
+  color:#052b33;
+  text-decoration:none;
+  border:none;
+  cursor:pointer;
+  font-weight:700;
+  box-shadow: 0 8px 20px rgba(125,211,252,0.08);
+}
+.btn.small{ padding:8px 10px; font-size:13px }
+.btn.ghost{
+  background:transparent;
+  color:var(--muted);
+  border:1px solid rgba(255,255,255,0.04);
+  box-shadow:none;
+}
+.btn.large{ padding:16px 26px; font-size:18px }
+
+/* result text */
+.result{ color:var(--muted); font-size:14px; text-align:center; max-width:200px }
+
+/* leader styles */
+.player.leader{
+  box-shadow: 0 14px 40px rgba(125,211,252,0.06);
+  border: 1px solid rgba(125,211,252,0.06);
+}
+
+/* tie visual (both highlighted) */
+.player.tie{
+  box-shadow: 0 12px 36px rgba(255,215,105,0.04);
+}
+
+/* responsive */
+@media (max-width:880px){
+  .game-container{ flex-direction:column; padding:18px; gap:14px }
+  .controls{ flex-direction:row; gap:10px; }
+  .result{ max-width:none }
+}
+
+/* little accessibility focus */
+.name-input:focus, .btn:focus, .color-input:focus { outline:3px solid rgba(125,211,252,0.08); outline-offset:2px }
+
+.roll-line {
+  display:flex;
+  gap:8px;
+  justify-content:center;
+}
+.player-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.money {
+  font-weight: bold;
+  color: gold;
+}
+
+.btn.small {
+  padding: 6px 10px;
+  font-size: 0.8rem;
+}
+
+.popup {
+  position: fixed;
+  inset: 0;
+  background: #0008;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.popup.hidden {
+  display: none;
+}
+
+.popup-content {
+  background: #111;
+  padding: 20px;
+  border-radius: 10px;
+  width: 280px;
+  text-align: center;
+}
