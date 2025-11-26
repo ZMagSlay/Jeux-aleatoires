@@ -171,6 +171,18 @@ playBtn.addEventListener("click",()=>{
 
   }, 600);
 });
+// après détermination du gagnant
+if(leftWins>rightWins){
+  leftScoreEl.textContent = Number(leftScoreEl.textContent)+1;
+  resultEl.textContent = `${localStorage.getItem("name-left") || "Joueur 1"} gagne la manche`;
+  if (typeof addMoney === 'function') addMoney(1,5);
+}
+else if(rightWins>leftWins){
+  rightScoreEl.textContent = Number(rightScoreEl.textContent)+1;
+  resultEl.textContent = `${localStorage.getItem("name-right") || "Joueur 2"} gagne la manche`;
+  if (typeof addMoney === 'function') addMoney(2,5);
+}
+
 
 // ---------------------- INITIALISATION ----------------------
 
