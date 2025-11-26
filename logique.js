@@ -1,37 +1,11 @@
-// logique.js (mise à jour — extrait clé)
+// logique.js - mode 1 (1 tirage vs 1 tirage)
+// ------------------------------------------------
 const leftRollEl = document.getElementById('left-roll');
 const rightRollEl = document.getElementById('right-roll');
 const leftScoreEl = document.getElementById('left-score');
 const rightScoreEl = document.getElementById('right-score');
 const playBtn = document.getElementById('play-btn');
 const resultEl = document.getElementById('result');
-
-// ... (tes autres fonctions loadScores/saveScores/animateRoll etc restent)
-
-playBtn.addEventListener('click', ()=>{
-  const left = rollOne();
-  const right = rollOne();
-
-  animateRoll(leftRollEl, left);
-  animateRoll(rightRollEl, right);
-
-  setTimeout(()=>{
-    if(left > right){
-      resultEl.innerHTML = 'Joueur 1 gagne !';
-      leftScoreEl.textContent = String(Number(leftScoreEl.textContent||0)+1);
-      // +5 € au gagnant
-      if (typeof addMoney === 'function') addMoney(1, 5);
-    } else if(right > left){
-      resultEl.innerHTML = 'Joueur 2 gagne !';
-      rightScoreEl.textContent = String(Number(rightScoreEl.textContent||0)+1);
-      if (typeof addMoney === 'function') addMoney(2, 5);
-    } else {
-      resultEl.innerHTML = "Égalité — aucun point ajouté";
-    }
-    saveScores();
-  }, 520);
-});
-
 
 const leftNameInput = document.getElementById('left-name-input');
 const rightNameInput = document.getElementById('right-name-input');
@@ -51,16 +25,9 @@ function loadScores(){
   leftScoreEl.textContent = localStorage.getItem('score-left') || '0';
   rightScoreEl.textContent = localStorage.getItem('score-right') || '0';
 }
-// --- GACHA & INVENTAIRE ---
 
-const fonts = [
-  {name:"Serif", css:"serif"},
-  {name:"Monospace", css:"monospace"},
-  {name:"Fantasy", css:"fantasy"},
-  {name:"Cursive", css:"cursive"},
-  {name:"Pixel", css:"'Press Start 2P', cursive"},
-];
-
+// -------------------- argent (compatible gacha_pages.js) --------------------
+// on initialise les clés si absent
 function initPlayerData() {
   if (!localStorage.getItem("money1")) localStorage.setItem("money1", "0");
   if (!localStorage.getItem("money2")) localStorage.setItem("money2", "0");
@@ -70,49 +37,58 @@ function initPlayerData() {
   if (!localStorage.getItem("font2")) localStorage.setItem("font2", "default");
 }
 
-initPlayerData();
-updateMoneyDisplay();
-applyFonts();
-
-function updateMoneyDisplay() {
-  document.getElementById("money-left").textContent = "💰 " + localStorage.getItem("money1");
-  document.getElementById("money-right").textContent = "💰 " + localStorage.getItem("money2");
+// updateMoneyDisplay et addMoney : on ne redéfinit que si elles n'existent pas
+if (typeof updateMoneyDisplay !== 'function') {
+  function updateMoneyDisplay() {
+    const m1 = localStorage.getItem('money1') || '0';
+    const m2 = localStorage.getItem('money2') || '0';
+    const el1 = document.getElementById("money-left");
+    const el2 = document.getElementById("money-right");
+    if (el1) el1.textContent = "💰 " + m1;
+    if (el2) el2.textContent = "💰 " + m2;
+  }
 }
 
-function addMoney(player, amount) {
-  const key = "money" + player;
-  const newVal = Number(localStorage.getItem(key)) + amount;
-  localStorage.setItem(key, newVal);
-  updateMoneyDisplay();
+if (typeof addMoney !== 'function') {
+  function addMoney(player, amount) {
+    const key = 'money' + (player === 1 ? '1' : '2');
+    const cur = Number(localStorage.getItem(key) || 0);
+    localStorage.setItem(key, String(cur + Number(amount)));
+    // mise à jour visuelle
+    if (typeof updateMoneyDisplay === 'function') updateMoneyDisplay();
+  }
 }
+
+// -------------------- gacha / fonts (simple) --------------------
+const fonts = [
+  {name:"Serif", css:"serif"},
+  {name:"Monospace", css:"monospace"},
+  {name:"Fantasy", css:"fantasy"},
+  {name:"Cursive", css:"cursive"},
+  {name:"Pixel", css:"'Press Start 2P', cursive"},
+];
+
 function openGacha(player) {
-  const money = Number(localStorage.getItem("money" + player));
-
+  const money = Number(localStorage.getItem("money" + (player===1? '1':'2')));
   if (money < 20) {
     showPopup("Pas assez d'argent", "<p>Il faut 20 💰</p>");
     return;
   }
-
   addMoney(player, -20);
-
   const reward = fonts[Math.floor(Math.random() * fonts.length)];
-
-  let inv = JSON.parse(localStorage.getItem("inv" + player));
+  let inv = JSON.parse(localStorage.getItem('inv' + (player===1? '1':'2')) || '[]');
   inv.push(reward);
-  localStorage.setItem("inv" + player, JSON.stringify(inv));
-
+  localStorage.setItem('inv' + (player===1? '1':'2'), JSON.stringify(inv));
   showPopup("🎰 Gacha", `<p>Tu as gagné : <b>${reward.name}</b></p>`);
 }
-function openInventory(player) {
-  const inv = JSON.parse(localStorage.getItem("inv" + player));
 
+function openInventory(player) {
+  const inv = JSON.parse(localStorage.getItem('inv' + (player===1? '1':'2')) || '[]');
   if (inv.length === 0) {
     showPopup("Inventaire", "<p>Aucune font obtenue.</p>");
     return;
   }
-
   let html = "<p>Choisis une font :</p>";
-
   inv.forEach((f, i) => {
     html += `
       <button class="btn small" onclick="equipFont(${player}, ${i})" 
@@ -120,39 +96,41 @@ function openInventory(player) {
         ${f.name}
       </button><br>`;
   });
-
   showPopup("Inventaire", html);
 }
+
 function equipFont(player, index) {
-  const inv = JSON.parse(localStorage.getItem("inv" + player));
+  const inv = JSON.parse(localStorage.getItem('inv' + (player===1? '1':'2')) || '[]');
   const f = inv[index];
-
-  localStorage.setItem("font" + player, f.css);
-
+  if(!f) return;
+  localStorage.setItem('font' + (player===1? '1':'2'), f.css);
   applyFonts();
   showPopup("Équipé", `<p>Nouvelle font appliquée !</p>`);
 }
 
 function applyFonts() {
-  const f1 = localStorage.getItem("font1");
-  const f2 = localStorage.getItem("font2");
-
-  if (f1 !== "default")
-    document.getElementById("name-left").style.fontFamily = f1;
-
-  if (f2 !== "default")
-    document.getElementById("name-right").style.fontFamily = f2;
+  const f1 = localStorage.getItem('font1');
+  const f2 = localStorage.getItem('font2');
+  const el1 = document.getElementById("name-left");
+  const el2 = document.getElementById("name-right");
+  if (el1) el1.style.fontFamily = (f1 && f1 !== 'default') ? f1 : '';
+  if (el2) el2.style.fontFamily = (f2 && f2 !== 'default') ? f2 : '';
 }
+
 function showPopup(title, body) {
-  document.getElementById("popup-title").innerHTML = title;
-  document.getElementById("popup-body").innerHTML = body;
-  document.getElementById("popup").classList.remove("hidden");
+  const t = document.getElementById("popup-title");
+  const b = document.getElementById("popup-body");
+  const p = document.getElementById("popup");
+  if (t) t.innerHTML = title;
+  if (b) b.innerHTML = body;
+  if (p) p.classList.remove("hidden");
 }
-
 function closePopup() {
-  document.getElementById("popup").classList.add("hidden");
+  const p = document.getElementById("popup");
+  if (p) p.classList.add("hidden");
 }
 
+// -------------------- noms / couleurs / sauvegardes --------------------
 function saveScores(){
   localStorage.setItem('score-left', leftScoreEl.textContent);
   localStorage.setItem('score-right', rightScoreEl.textContent);
@@ -164,10 +142,10 @@ function loadNamesAndColors(){
   const leftColor = localStorage.getItem('color-left') || '#7dd3fc';
   const rightColor = localStorage.getItem('color-right') || '#fca5a5';
 
-  leftNameInput.value = leftName;
-  rightNameInput.value = rightName;
-  leftColorInput.value = leftColor;
-  rightColorInput.value = rightColor;
+  if (leftNameInput) leftNameInput.value = leftName;
+  if (rightNameInput) rightNameInput.value = rightName;
+  if (leftColorInput) leftColorInput.value = leftColor;
+  if (rightColorInput) rightColorInput.value = rightColor;
 
   applyNameColor();
 }
@@ -189,9 +167,8 @@ function saveColor(side){
 }
 
 function applyNameColor(){
-  // Affiche le nom comme input stylé (on garde l'input mais on applique couleur)
-  leftNameInput.style.color = leftColorInput.value;
-  rightNameInput.style.color = rightColorInput.value;
+  if (leftNameInput) leftNameInput.style.color = leftColorInput.value;
+  if (rightNameInput) rightNameInput.style.color = rightColorInput.value;
 }
 
 // roll jusqu'à 10000 inclus
@@ -213,27 +190,22 @@ function updateLeaderCrown(){
   const left = Number(leftScoreEl.textContent || 0);
   const right = Number(rightScoreEl.textContent || 0);
 
-  // réinitialiser classes
   playerLeftSection.classList.remove('leader','tie');
   playerRightSection.classList.remove('leader','tie');
-  leftCrown.classList.remove('visible');
-  rightCrown.classList.remove('visible');
+  if (leftCrown) leftCrown.classList.remove('visible');
+  if (rightCrown) rightCrown.classList.remove('visible');
 
   if(left > right){
     playerLeftSection.classList.add('leader');
-    leftCrown.classList.add('visible');
+    if (leftCrown) leftCrown.classList.add('visible');
   } else if(right > left){
     playerRightSection.classList.add('leader');
-    rightCrown.classList.add('visible');
+    if (rightCrown) rightCrown.classList.add('visible');
   } else if(left === right && left !== 0){
-    // Egalité mais scores non nuls — indiquer tie visuellement
     playerLeftSection.classList.add('tie');
     playerRightSection.classList.add('tie');
-    // on peut afficher deux petites couronnes
-    leftCrown.classList.add('visible');
-    rightCrown.classList.add('visible');
-  } else {
-    // pas de points, aucune couronne
+    if (leftCrown) leftCrown.classList.add('visible');
+    if (rightCrown) rightCrown.classList.add('visible');
   }
 }
 
@@ -247,11 +219,25 @@ playBtn.addEventListener('click', ()=>{
 
   setTimeout(()=>{
     if(left > right){
-      resultEl.innerHTML = `${(localStorage.getItem('name-left')||leftNameInput.value||'Joueur 1')} gagne !`;
+      resultEl.innerHTML = 'Joueur 1 gagne !';
       leftScoreEl.textContent = String(Number(leftScoreEl.textContent||0)+1);
+      // +5 via addMoney (compatible gacha_pages.js)
+      if (typeof addMoney === 'function') addMoney(1, 5);
+      else {
+        // fallback : clé money1
+        const m = Number(localStorage.getItem('money1') || 0);
+        localStorage.setItem('money1', String(m + 5));
+        if (typeof updateMoneyDisplay === 'function') updateMoneyDisplay();
+      }
     } else if(right > left){
-      resultEl.innerHTML = `${(localStorage.getItem('name-right')||rightNameInput.value||'Joueur 2')} gagne !`;
+      resultEl.innerHTML = 'Joueur 2 gagne !';
       rightScoreEl.textContent = String(Number(rightScoreEl.textContent||0)+1);
+      if (typeof addMoney === 'function') addMoney(2, 5);
+      else {
+        const m = Number(localStorage.getItem('money2') || 0);
+        localStorage.setItem('money2', String(m + 5));
+        if (typeof updateMoneyDisplay === 'function') updateMoneyDisplay();
+      }
     } else {
       resultEl.innerHTML = "Égalité — aucun point ajouté";
     }
@@ -261,32 +247,19 @@ playBtn.addEventListener('click', ()=>{
 });
 
 // événements noms / couleurs
-leftNameInput.addEventListener('change', ()=>{
-  saveName('left');
-});
-leftNameInput.addEventListener('input', ()=>{
-  // mise à jour immédiate locale (pas obliger d'attendre change)
-  saveName('left');
-});
-
-rightNameInput.addEventListener('change', ()=>{
-  saveName('right');
-});
-rightNameInput.addEventListener('input', ()=>{
-  saveName('right');
-});
-
-leftColorInput.addEventListener('input', ()=>{
-  saveColor('left');
-  applyNameColor();
-});
-rightColorInput.addEventListener('input', ()=>{
-  saveColor('right');
-  applyNameColor();
-});
+if (leftNameInput) {
+  leftNameInput.addEventListener('change', ()=> saveName('left'));
+  leftNameInput.addEventListener('input', ()=> saveName('left'));
+}
+if (rightNameInput) {
+  rightNameInput.addEventListener('change', ()=> saveName('right'));
+  rightNameInput.addEventListener('input', ()=> saveName('right'));
+}
+if (leftColorInput) leftColorInput.addEventListener('input', ()=>{ saveColor('left'); applyNameColor(); });
+if (rightColorInput) rightColorInput.addEventListener('input', ()=>{ saveColor('right'); applyNameColor(); });
 
 // reset scores
-resetBtn.addEventListener('click', ()=>{
+if (resetBtn) resetBtn.addEventListener('click', ()=>{
   if (!confirm('Réinitialiser les scores ?')) return;
   localStorage.setItem('score-left','0');
   localStorage.setItem('score-right','0');
@@ -295,7 +268,7 @@ resetBtn.addEventListener('click', ()=>{
 });
 
 // reset noms & couleurs
-resetNamesBtn.addEventListener('click', ()=>{
+if (resetNamesBtn) resetNamesBtn.addEventListener('click', ()=>{
   if(!confirm('Remettre les noms et couleurs par défaut ?')) return;
   localStorage.removeItem('name-left');
   localStorage.removeItem('name-right');
@@ -306,7 +279,9 @@ resetNamesBtn.addEventListener('click', ()=>{
 });
 
 // initialisation
+initPlayerData();
 loadScores();
 loadNamesAndColors();
 applyNameColor();
+if (typeof updateMoneyDisplay === 'function') updateMoneyDisplay();
 updateLeaderCrown();
