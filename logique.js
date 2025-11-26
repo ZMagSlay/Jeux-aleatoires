@@ -1,9 +1,37 @@
+// logique.js (mise à jour — extrait clé)
 const leftRollEl = document.getElementById('left-roll');
 const rightRollEl = document.getElementById('right-roll');
 const leftScoreEl = document.getElementById('left-score');
 const rightScoreEl = document.getElementById('right-score');
 const playBtn = document.getElementById('play-btn');
 const resultEl = document.getElementById('result');
+
+// ... (tes autres fonctions loadScores/saveScores/animateRoll etc restent)
+
+playBtn.addEventListener('click', ()=>{
+  const left = rollOne();
+  const right = rollOne();
+
+  animateRoll(leftRollEl, left);
+  animateRoll(rightRollEl, right);
+
+  setTimeout(()=>{
+    if(left > right){
+      resultEl.innerHTML = 'Joueur 1 gagne !';
+      leftScoreEl.textContent = String(Number(leftScoreEl.textContent||0)+1);
+      // +5 € au gagnant
+      if (typeof addMoney === 'function') addMoney(1, 5);
+    } else if(right > left){
+      resultEl.innerHTML = 'Joueur 2 gagne !';
+      rightScoreEl.textContent = String(Number(rightScoreEl.textContent||0)+1);
+      if (typeof addMoney === 'function') addMoney(2, 5);
+    } else {
+      resultEl.innerHTML = "Égalité — aucun point ajouté";
+    }
+    saveScores();
+  }, 520);
+});
+
 
 const leftNameInput = document.getElementById('left-name-input');
 const rightNameInput = document.getElementById('right-name-input');

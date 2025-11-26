@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Gacha — Fonts</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <a href="index.html" class="home-link">← Menu</a>
+    <a id="back-to-game" class="home-link" href="#">← Retour jeu</a>
+  </header>
+
+  <main class="centered">
+    <div class="card" style="max-width:520px;">
+      <h2 id="title">Gacha</h2>
+
+      <p id="player-info">Joueur ?</p>
+
+      <div style="display:flex;gap:12px;align-items:center;justify-content:center;margin:18px 0;">
+        <button id="pull-btn" class="btn large">🎰 Lancer le gacha (20 💰)</button>
+        <div id="money" style="font-weight:700;color:gold">💰 0</div>
+      </div>
+
+      <div id="result-box" style="min-height:80px;display:flex;align-items:center;justify-content:center;">
+        <div id="result-content">Résultat ici</div>
+      </div>
+
+      <hr style="margin:18px 0">
+
+      <h3>Inventaire rapide</h3>
+      <div id="quick-inv" style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center"></div>
+
+      <div style="margin-top:14px;display:flex;gap:10px;justify-content:center">
+        <a id="open-inv" class="btn ghost" href="#">Voir l'inventaire</a>
+      </div>
+    </div>
+  </main>
+
+  <script src="gacha_pages.js"></script>
+</body>
+</html>
