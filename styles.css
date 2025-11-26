@@ -48,6 +48,17 @@ body{
   margin: 18px auto;
 }
 
+/* legacy: keep if used elsewhere */
+.player-card .player-name {
+    position: absolute;
+    top: 10px;         /* ajuste si tu veux un peu plus haut ou bas */
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+    width: auto;
+    white-space: nowrap;
+}
+
 /* player card */
 .player{
   position:relative;
@@ -59,39 +70,51 @@ body{
   box-shadow: 0 8px 30px rgba(2,6,23,0.45);
   transition:transform .18s ease, box-shadow .18s ease;
   min-width:220px;
+  padding-top:22px; /* espace pour le nom centré */
 }
 .player:hover{ transform: translateY(-6px) }
 
 /* top row inside player: crown & name */
+/* changed: column layout to center name reliably */
 .player-top{
   display:flex;
-  align-items:center;
-  justify-content:center;
-  gap:10px;
+  flex-direction:column;    /* place la couronne / nom / éventuel sous-texte en colonne */
+  align-items:center;       /* centre horizontalement */
+  justify-content:flex-start;
+  gap:8px;
   margin-bottom:12px;
   position:relative;
 }
+
 .crown{
   font-size:22px;
   opacity:0;
   transform:translateY(-4px) scale(0.9);
   transition:opacity .18s ease, transform .18s ease;
-  margin-right:4px;
+  margin:0;
 }
 .crown.visible{ opacity:1; transform:translateY(0) scale(1.05) }
 
-/* name input (styled to look like a label) */
+/* ---------- Centre propre des noms dans la carte joueur ---------- */
+/* input name (styled to look like a label) */
 .name-input{
+  display: block;
+  width: min(84%, 220px);    /* limite la largeur pour rester centré et responsive */
+  max-width: 260px;
+  margin: 0 auto;            /* centre horizontalement */
+  text-align: center;        /* centre le texte à l'intérieur */
   background:transparent;
   border:none;
   border-bottom:2px solid transparent;
   font-size:18px;
   font-weight:700;
   color:var(--accent);
-  text-align:center;
   padding:6px 8px;
   outline:none;
-  max-width:160px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;   /* tronque proprement si trop long */
+  box-sizing: border-box;
 }
 .name-input:focus{
   border-bottom-color: rgba(255,255,255,0.08);
@@ -99,6 +122,25 @@ body{
   border-radius:6px;
 }
 
+/* placeholder discret mais centré */
+.name-input::placeholder {
+  color: rgba(230,238,248,0.44);
+  text-align: center;
+}
+
+/* if old span player-name present */
+.player-name {
+  display: block;
+  margin: 0 auto;
+  text-align: center;
+  width: min(84%, 260px);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: 700;
+}
+
+/* roll */
 .roll {
   width: 80px;           /* largeur fixe  (augmente si tu veux) */
   height: 60px;          /* hauteur fixe */
@@ -115,7 +157,6 @@ body{
   text-overflow: clip;    /* aucune déformation */
   white-space: nowrap;    /* reste sur une seule ligne */
 }
-
 
 /* score */
 .score{
@@ -235,13 +276,6 @@ body{
   display: none;
 }
 
-.popup-content {
-  background: #111;
-  padding: 20px;
-  border-radius: 10px;
-  width: 280px;
-  text-align: center;
-}
 /* ---- Popup / inventaire : fix overflow & layout ---- */
 .popup-content {
   background: #0f1113;
@@ -340,4 +374,12 @@ body{
   color: var(--muted);
   border: 1px solid rgba(255,255,255,0.06);
   box-shadow: none;
+}
+
+/* small adjustments for mobile */
+@media (max-width:560px){
+  .name-input { width: 78%; font-size:16px; max-width:180px; }
+  .player { padding-top:16px; }
+  .popup-content { width: min(560px, 94vw); padding:14px; }
+  .inv-row > div:first-child .font-name { max-width: 140px; }
 }
