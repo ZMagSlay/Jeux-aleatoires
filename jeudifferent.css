@@ -133,9 +133,45 @@
   box-shadow: 0 8px 30px rgba(2, 6, 23, 0.6);
 }
 
+/* Animation de tremblement du plateau à la victoire - ULTRA EXTRÊME */
+@keyframes boardShakeUltra {
+  0% { transform: translate(0, 0) scale(1) rotate(0deg); }
+  2% { transform: translate(-25px, -25px) scale(1.05) rotate(-4deg); }
+  4% { transform: translate(25px, -25px) scale(1.07) rotate(4deg); }
+  6% { transform: translate(-25px, 25px) scale(1.06) rotate(-4deg); }
+  8% { transform: translate(25px, 25px) scale(1.08) rotate(4deg); }
+  10% { transform: translate(-35px, 0) scale(1.07) rotate(-5deg); }
+  12% { transform: translate(35px, 0) scale(1.09) rotate(5deg); }
+  14% { transform: translate(0, -35px) scale(1.06) rotate(-4deg); }
+  16% { transform: translate(0, 35px) scale(1.08) rotate(4deg); }
+  18% { transform: translate(-20px, -20px) scale(1.07) rotate(-3deg); }
+  20% { transform: translate(20px, 20px) scale(1.10) rotate(3deg); }
+  22% { transform: translate(-22px, 12px) scale(1.06) rotate(-3.5deg); }
+  24% { transform: translate(22px, -12px) scale(1.08) rotate(3.5deg); }
+  26% { transform: translate(-15px, -22px) scale(1.07) rotate(-3deg); }
+  28% { transform: translate(15px, 22px) scale(1.09) rotate(3deg); }
+  30% { transform: translate(-12px, 15px) scale(1.05) rotate(-2deg); }
+  32% { transform: translate(12px, -15px) scale(1.07) rotate(2deg); }
+  34% { transform: translate(-10px, -10px) scale(1.06) rotate(-1.5deg); }
+  36% { transform: translate(10px, 10px) scale(1.08) rotate(1.5deg); }
+  38% { transform: translate(-8px, 8px) scale(1.04) rotate(-1deg); }
+  40% { transform: translate(8px, -8px) scale(1.06) rotate(1deg); }
+  42% { transform: translate(-6px, -6px) scale(1.05) rotate(-0.8deg); }
+  44% { transform: translate(6px, 6px) scale(1.07) rotate(0.8deg); }
+  46% { transform: translate(-5px, 5px) scale(1.03) rotate(-0.5deg); }
+  48% { transform: translate(5px, -5px) scale(1.05) rotate(0.5deg); }
+  50% { transform: translate(-4px, -4px) scale(1.04) rotate(-0.3deg); }
+  52% { transform: translate(4px, 4px) scale(1.06) rotate(0.3deg); }
+  54% { transform: translate(-2px, 2px) scale(1.02) rotate(-0.2deg); }
+  56% { transform: translate(2px, -2px) scale(1.04) rotate(0.2deg); }
+  58% { transform: translate(-1px, -1px) scale(1.02) rotate(-0.1deg); }
+  60% { transform: translate(1px, 1px) scale(1.03) rotate(0.1deg); }
+  100% { transform: translate(0, 0) scale(1) rotate(0deg); }
+}
+
 .p4-column {
   display: flex;
-  flex-direction: column-reverse;
+  flex-direction: column;
   gap: 8px;
   cursor: pointer;
   transition: opacity 0.2s ease;
@@ -169,22 +205,628 @@
   box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.3);
 }
 
+/* Animation de chute avec rebond pour les jetons */
+@keyframes tokenFall {
+  0% { transform: translateY(-50px); opacity: 0; }
+  50% { opacity: 1; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+.p4-cell.player1,
+.p4-cell.player2 {
+  animation: tokenFall 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+}
+
+/* Animation de chute du jeton depuis le haut */
+@keyframes dropToken {
+  from {
+    opacity: 1;
+    transform: translateY(-400px) scale(1);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Classe spécifique pour le jeton qui vient d'être posé */
+.p4-cell.dropping {
+  animation: dropToken 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards !important;
+}
+
 .p4-cell.player1 {
   background: #ff6b6b;
   border-color: #ff5252;
   box-shadow: 0 0 15px rgba(255, 107, 107, 0.5), inset 0 2px 6px rgba(0, 0, 0, 0.3);
+  animation: none !important;
 }
 
 .p4-cell.player2 {
   background: #ffd93d;
   border-color: #ffc107;
   box-shadow: 0 0 15px rgba(255, 217, 61, 0.5), inset 0 2px 6px rgba(0, 0, 0, 0.3);
+  animation: none !important;
 }
 
 .p4-cell.empty:hover {
   background: rgba(255, 255, 255, 0.15);
   border-color: rgba(125, 211, 252, 0.3);
   box-shadow: 0 0 8px rgba(125, 211, 252, 0.2);
+}
+
+/* Animation de victoire - pulse ULTRA EXTRÊME */
+@keyframes winPulseUltra {
+  0% { transform: scale(1); }
+  10% { transform: scale(1.6); }
+  20% { transform: scale(0.8) rotateZ(25deg); }
+  30% { transform: scale(1.5) rotateZ(-25deg); }
+  40% { transform: scale(0.85) rotateZ(20deg); }
+  50% { transform: scale(1.6) rotateZ(-20deg); }
+  60% { transform: scale(0.9) rotateZ(15deg); }
+  70% { transform: scale(1.5) rotateZ(-15deg); }
+  80% { transform: scale(0.95) rotateZ(10deg); }
+  100% { transform: scale(1) rotateZ(0deg); }
+}
+
+/* Animation de rotation victoire ULTRA FOLLE */
+@keyframes winSpinUltra {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(1440deg); }
+}
+
+/* Animation de saut AMPLIFIÉ */
+@keyframes winBounceUltra {
+  0%, 100% { transform: translateY(0); }
+  12% { transform: translateY(-30px); }
+  25% { transform: translateY(0); }
+  37% { transform: translateY(-25px); }
+  50% { transform: translateY(0); }
+  62% { transform: translateY(-20px); }
+  75% { transform: translateY(0); }
+  87% { transform: translateY(-10px); }
+}
+
+/* Animation de flash/brighten */
+@keyframes winFlash {
+  0%, 100% { filter: brightness(1) saturate(1); }
+  50% { filter: brightness(1.8) saturate(2); }
+}
+
+/* Animation de tremblement intense */
+@keyframes winShake {
+  0%, 100% { transform: translateX(0) translateY(0); }
+  5% { transform: translateX(-4px) translateY(-4px); }
+  10% { transform: translateX(4px) translateY(4px); }
+  15% { transform: translateX(-4px) translateY(4px); }
+  20% { transform: translateX(4px) translateY(-4px); }
+  25% { transform: translateX(-3px) translateY(-3px); }
+  30% { transform: translateX(3px) translateY(3px); }
+  35% { transform: translateX(-2px) translateY(2px); }
+  40% { transform: translateX(2px) translateY(-2px); }
+  45% { transform: translateX(-1px) translateY(-1px); }
+  50% { transform: translateX(1px) translateY(1px); }
+  60% { transform: translateX(0) translateY(0); }
+}
+
+/* Animation de zoom pulse */
+@keyframes winZoomPulse {
+  0%, 100% { transform: scale(1); }
+  25% { transform: scale(1.3); }
+  50% { transform: scale(0.9); }
+  75% { transform: scale(1.25); }
+}
+
+/* Animation de spin rapide */
+@keyframes winFastSpin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Animation de glow pulse */
+@keyframes winGlowPulse {
+  0%, 100% {
+    box-shadow: 
+      0 0 80px rgba(255, 107, 107, 1), 
+      0 0 120px rgba(124, 255, 178, 1), 
+      0 0 180px rgba(124, 255, 178, 0.8),
+      0 0 250px rgba(255, 107, 107, 0.6),
+      inset 0 2px 6px rgba(0, 0, 0, 0.3);
+  }
+  50% {
+    box-shadow: 
+      0 0 120px rgba(255, 107, 107, 1), 
+      0 0 180px rgba(124, 255, 178, 1), 
+      0 0 240px rgba(124, 255, 178, 0.9),
+      0 0 320px rgba(255, 107, 107, 0.8),
+      inset 0 2px 6px rgba(0, 0, 0, 0.3);
+  }
+}
+
+/* Animation de skew extrême */
+@keyframes winSkew {
+  0%, 100% { transform: skewX(0deg) skewY(0deg); }
+  25% { transform: skewX(15deg) skewY(-15deg); }
+  50% { transform: skewX(-15deg) skewY(15deg); }
+  75% { transform: skewX(10deg) skewY(-10deg); }
+}
+
+/* Animation de perspective flip */
+@keyframes winFlip {
+  0% { transform: perspective(600px) rotateY(0deg); }
+  25% { transform: perspective(600px) rotateY(90deg); }
+  50% { transform: perspective(600px) rotateY(180deg); }
+  75% { transform: perspective(600px) rotateY(270deg); }
+  100% { transform: perspective(600px) rotateY(360deg); }
+}
+
+/* Animation de hue shift */
+@keyframes winHueShift {
+  0%, 100% { filter: hue-rotate(0deg); }
+  25% { filter: hue-rotate(90deg); }
+  50% { filter: hue-rotate(180deg); }
+  75% { filter: hue-rotate(270deg); }
+}
+
+/* Animation de wobble extreme */
+@keyframes winWobble {
+  0%, 100% { transform: rotate(0deg); }
+  6% { transform: rotate(-5deg); }
+  12% { transform: rotate(5deg); }
+  18% { transform: rotate(-4deg); }
+  24% { transform: rotate(4deg); }
+  30% { transform: rotate(-3deg); }
+  36% { transform: rotate(3deg); }
+  42% { transform: rotate(-2deg); }
+  48% { transform: rotate(2deg); }
+  54% { transform: rotate(-1deg); }
+  60% { transform: rotate(1deg); }
+}
+
+/* Animation de breath expansion */
+@keyframes winBreath {
+  0%, 100% { transform: scale(1); filter: opacity(1); }
+  20% { transform: scale(1.4); filter: opacity(0.8); }
+  40% { transform: scale(0.8); filter: opacity(1); }
+  60% { transform: scale(1.35); filter: opacity(0.9); }
+  80% { transform: scale(0.85); filter: opacity(1); }
+}
+
+/* Animation de strobe light */
+@keyframes winStrobe {
+  0%, 100% { opacity: 1; }
+  5% { opacity: 0.2; }
+  10% { opacity: 1; }
+  15% { opacity: 0.3; }
+  20% { opacity: 1; }
+  25% { opacity: 0.2; }
+  30% { opacity: 1; }
+  35% { opacity: 0.1; }
+  40% { opacity: 1; }
+}
+
+/* Animation de rotating border glow */
+@keyframes winBorderGlow {
+  0% { border-color: #7CFFB2; box-shadow: 0 0 60px rgba(124, 255, 178, 1); }
+  25% { border-color: #ff6b6b; box-shadow: 0 0 60px rgba(255, 107, 107, 1); }
+  50% { border-color: #ffd93d; box-shadow: 0 0 60px rgba(255, 217, 61, 1); }
+  75% { border-color: #7dd3fc; box-shadow: 0 0 60px rgba(125, 211, 252, 1); }
+  100% { border-color: #7CFFB2; box-shadow: 0 0 60px rgba(124, 255, 178, 1); }
+}
+
+/* Animation de wave expansion */
+@keyframes winWaveExpand {
+  0% { transform: scale(1); }
+  25% { transform: scale(1.25); }
+  50% { transform: scale(0.95); }
+  75% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+/* Animation de spin reverse */
+@keyframes winSpinReverse {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(-1080deg); }
+}
+
+/* Animation de dance lateral */
+@keyframes winDance {
+  0%, 100% { transform: translateX(0); }
+  12% { transform: translateX(-8px) rotateZ(-10deg); }
+  24% { transform: translateX(8px) rotateZ(10deg); }
+  36% { transform: translateX(-6px) rotateZ(-8deg); }
+  48% { transform: translateX(6px) rotateZ(8deg); }
+  60% { transform: translateX(-4px) rotateZ(-5deg); }
+  72% { transform: translateX(4px) rotateZ(5deg); }
+  84% { transform: translateX(-2px) rotateZ(-2deg); }
+}
+
+/* Animation de pop out */
+@keyframes winPopOut {
+  0% { transform: scale(0.5); }
+  50% { transform: scale(1.5); }
+  100% { transform: scale(1); }
+}
+
+/* Animation de flip horizontal */
+@keyframes winFlipH {
+  0% { transform: perspective(600px) rotateX(0deg); }
+  25% { transform: perspective(600px) rotateX(90deg); }
+  50% { transform: perspective(600px) rotateX(180deg); }
+  75% { transform: perspective(600px) rotateX(270deg); }
+  100% { transform: perspective(600px) rotateX(360deg); }
+}
+
+/* Animation de chromatic aberration effect */
+@keyframes winChromatic {
+  0%, 100% { filter: drop-shadow(0 0 0px rgba(255, 107, 107, 0)) drop-shadow(0 0 0px rgba(124, 255, 178, 0)); }
+  25% { filter: drop-shadow(3px 0px 4px rgba(255, 107, 107, 0.8)) drop-shadow(-3px 0px 4px rgba(124, 255, 178, 0.8)); }
+  50% { filter: drop-shadow(0 3px 4px rgba(255, 217, 61, 0.8)) drop-shadow(0 -3px 4px rgba(125, 211, 252, 0.8)); }
+  75% { filter: drop-shadow(-3px 0px 4px rgba(255, 107, 107, 0.8)) drop-shadow(3px 0px 4px rgba(124, 255, 178, 0.8)); }
+}
+
+/* Animation de glitch effect */
+@keyframes winGlitch {
+  0%, 100% { transform: translate(0); }
+  20% { transform: translate(-2px, 2px); }
+  40% { transform: translate(-2px, -2px); }
+  60% { transform: translate(2px, 2px); }
+  80% { transform: translate(2px, -2px); }
+}
+
+/* Animation de rainbow color shift EXTREME */
+@keyframes winRainbow {
+  0% { filter: hue-rotate(0deg) brightness(1.2); }
+  7% { filter: hue-rotate(30deg) brightness(1.3); }
+  14% { filter: hue-rotate(60deg) brightness(1.25); }
+  21% { filter: hue-rotate(90deg) brightness(1.35); }
+  28% { filter: hue-rotate(120deg) brightness(1.3); }
+  35% { filter: hue-rotate(150deg) brightness(1.25); }
+  42% { filter: hue-rotate(180deg) brightness(1.35); }
+  50% { filter: hue-rotate(210deg) brightness(1.2); }
+  57% { filter: hue-rotate(240deg) brightness(1.3); }
+  64% { filter: hue-rotate(270deg) brightness(1.25); }
+  71% { filter: hue-rotate(300deg) brightness(1.35); }
+  78% { filter: hue-rotate(330deg) brightness(1.3); }
+  100% { filter: hue-rotate(360deg) brightness(1.2); }
+}
+
+/* Animation de scale chaos */
+@keyframes winChaos {
+  0% { transform: scale(1) rotate(0deg); }
+  8% { transform: scale(1.4) rotate(15deg); }
+  16% { transform: scale(0.7) rotate(-20deg); }
+  24% { transform: scale(1.5) rotate(25deg); }
+  32% { transform: scale(0.8) rotate(-15deg); }
+  40% { transform: scale(1.3) rotate(30deg); }
+  48% { transform: scale(0.9) rotate(-10deg); }
+  56% { transform: scale(1.45) rotate(20deg); }
+  64% { transform: scale(0.75) rotate(-25deg); }
+  72% { transform: scale(1.35) rotate(10deg); }
+  80% { transform: scale(0.85) rotate(-5deg); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+
+/* ---- CONFETTI & EXPLOSIONS ---- */
+
+/* Animation de confetti qui tombe */
+@keyframes confettiFall {
+  0% {
+    transform: translateY(-100vh) translateX(0) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh) translateX(100px) rotate(720deg);
+    opacity: 0;
+  }
+}
+
+@keyframes confettiFallLeft {
+  0% {
+    transform: translateY(-100vh) translateX(0) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh) translateX(-100px) rotate(720deg);
+    opacity: 0;
+  }
+}
+
+@keyframes confettiFallWide {
+  0% {
+    transform: translateY(-100vh) translateX(0) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh) translateX(150px) rotate(720deg);
+    opacity: 0;
+  }
+}
+
+@keyframes confettiFallWideLeft {
+  0% {
+    transform: translateY(-100vh) translateX(0) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh) translateX(-150px) rotate(720deg);
+    opacity: 0;
+  }
+}
+
+/* Animation d'explosion - boule de feu qui s'étend */
+@keyframes explosionBurst {
+  0% {
+    transform: scale(0);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.5);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(0);
+    opacity: 0;
+  }
+}
+
+/* Animation d'onde de choc */
+@keyframes shockWave {
+  0% {
+    transform: scale(0);
+    opacity: 1;
+    border-width: 3px;
+  }
+  100% {
+    transform: scale(3);
+    opacity: 0;
+    border-width: 1px;
+  }
+}
+
+/* Animation d'éclair/lightning */
+@keyframes lightning {
+  0%, 10%, 20%, 30%, 100% { opacity: 0; }
+  5%, 15%, 25% { opacity: 1; }
+}
+
+/* Animation de pulvérisation de particules */
+@keyframes particleBurst {
+  0% {
+    transform: translate(0, 0) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--tx), var(--ty)) scale(0);
+    opacity: 0;
+  }
+}
+
+/* Animation de flash blanc intense avec fade rapide */
+@keyframes whiteFlash {
+  0% { opacity: 0; }
+  10% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* Animation d'expansion rapide du plateau */
+@keyframes boardExplode {
+  0% { transform: scale(1) rotate(0deg); }
+  25% { transform: scale(1.15) rotate(-5deg); }
+  50% { transform: scale(1.25) rotate(5deg); }
+  75% { transform: scale(1.1) rotate(-3deg); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+
+/* Animation de pulse du plateau extrême */
+@keyframes boardPulseExtreme {
+  0%, 100% { box-shadow: 0 8px 30px rgba(2, 6, 23, 0.6); }
+  50% { box-shadow: 0 0 100px rgba(124, 255, 178, 1), 0 0 150px rgba(255, 107, 107, 0.8), 0 8px 30px rgba(2, 6, 23, 0.9); }
+}
+
+/* Animation de message de moquerie */
+@keyframes mockPopIn {
+  0% {
+    transform: scale(0) rotate(-360deg);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.2) rotate(10deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+@keyframes mockBounce {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  25% { transform: translateY(-20px) rotate(-5deg); }
+  50% { transform: translateY(-40px) rotate(5deg); }
+  75% { transform: translateY(-20px) rotate(-5deg); }
+}
+
+@keyframes mockShake {
+  0%, 100% { transform: translateX(0) rotateZ(0deg); }
+  10% { transform: translateX(-10px) rotateZ(-2deg); }
+  20% { transform: translateX(10px) rotateZ(2deg); }
+  30% { transform: translateX(-10px) rotateZ(-2deg); }
+  40% { transform: translateX(10px) rotateZ(2deg); }
+  50% { transform: translateX(-5px) rotateZ(-1deg); }
+  60% { transform: translateX(5px) rotateZ(1deg); }
+  70% { transform: translateX(-2px) rotateZ(-0.5deg); }
+  80% { transform: translateX(2px) rotateZ(0.5deg); }
+}
+
+@keyframes mockFlip {
+  0% { transform: perspective(600px) rotateY(0deg); }
+  50% { transform: perspective(600px) rotateY(180deg); }
+  100% { transform: perspective(600px) rotateY(360deg); }
+}
+
+@keyframes mockPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.3); }
+}
+
+@keyframes mockFadeOut {
+  0% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(50px); }
+}
+
+/* Éléments de confetti */
+.confetti {
+  position: fixed;
+  width: 10px;
+  height: 10px;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+.confetti.rect {
+  width: 8px;
+  height: 12px;
+}
+
+.confetti.circle {
+  border-radius: 50%;
+}
+
+.confetti.rect {
+  border-radius: 2px;
+}
+
+/* Éclair/Lightning */
+.lightning {
+  position: fixed;
+  pointer-events: none;
+  z-index: 9997;
+  background: rgba(255, 255, 255, 0.9);
+  filter: blur(2px);
+}
+
+/* Particules de burst */
+.particle {
+  position: fixed;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9998;
+}
+
+/* Flash blanc */
+.white-flash {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: white;
+  pointer-events: none;
+  z-index: 9996;
+}
+
+/* Messages de moquerie */
+.mock-message {
+  position: fixed;
+  font-size: 28px;
+  font-weight: 900;
+  color: #ff6b6b;
+  text-shadow: 
+    0 0 20px rgba(255, 107, 107, 0.8),
+    0 0 40px rgba(255, 107, 107, 0.6),
+    2px 2px 4px rgba(0, 0, 0, 0.5);
+  pointer-events: none;
+  z-index: 9995;
+  transform-origin: center;
+  white-space: nowrap;
+}
+
+.mock-message.bounce {
+  animation: mockPopIn 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55), mockBounce 1.5s ease-in-out, mockFadeOut 2s ease-out 5s forwards;
+}
+
+.mock-message.shake {
+  animation: mockPopIn 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55), mockShake 0.6s ease-in-out, mockFadeOut 2s ease-out 5s forwards;
+  color: #ffd93d;
+}
+
+.mock-message.flip {
+  animation: mockPopIn 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55), mockFlip 1s ease-in-out, mockFadeOut 2s ease-out 5s forwards;
+  color: #7dd3fc;
+}
+
+.mock-message.pulse {
+  animation: mockPopIn 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55), mockPulse 0.5s ease-in-out infinite, mockFadeOut 2s ease-out 5s forwards;
+  font-size: 32px;
+  color: #ff5252;
+}
+
+/* Explosions et ondes de choc */
+.explosion {
+  position: fixed;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9998;
+}
+
+.explosion.burst {
+  border: none;
+  background: radial-gradient(circle, #ff6b6b, #ffd93d);
+}
+
+.explosion.shock {
+  background: none;
+  border: 2px solid rgba(124, 255, 178, 0.6);
+}
+
+/* Les jetons gagnants: effets ULTRA EXTRÊMES - 22+ animations de FOLIE! */
+.p4-cell.winning {
+  animation: 
+    winPulseUltra 0.4s ease-in-out 12,
+    winSpinUltra 2.5s linear infinite,
+    winBounceUltra 1.8s ease-in-out infinite,
+    winFlash 0.25s ease-in-out infinite,
+    winShake 0.15s ease-in-out infinite,
+    winZoomPulse 0.6s ease-in-out infinite,
+    winFastSpin 0.8s linear infinite,
+    winGlowPulse 0.5s ease-in-out infinite,
+    winSkew 0.7s ease-in-out infinite,
+    winFlip 3s linear infinite,
+    winHueShift 2s linear infinite,
+    winWobble 0.5s ease-in-out infinite,
+    winBreath 1.2s ease-in-out infinite,
+    winStrobe 0.6s steps(2, end) infinite,
+    winBorderGlow 1.5s ease-in-out infinite,
+    winWaveExpand 0.9s ease-in-out infinite,
+    winSpinReverse 2s linear infinite,
+    winDance 0.8s ease-in-out infinite,
+    winPopOut 0.7s cubic-bezier(0.68, -0.55, 0.27, 1.55) infinite,
+    winFlipH 2s linear infinite,
+    winChromatic 0.6s ease-in-out infinite,
+    winGlitch 0.2s ease-in-out infinite,
+    winRainbow 1.8s linear infinite,
+    winChaos 1.1s ease-in-out infinite
+    !important;
+  border-color: #7CFFB2;
+}
+
+.p4-cell.winning.player1 {
+  box-shadow: 
+    0 0 100px rgba(255, 107, 107, 1), 
+    0 0 150px rgba(124, 255, 178, 1), 
+    0 0 200px rgba(124, 255, 178, 0.9),
+    0 0 280px rgba(255, 107, 107, 0.7),
+    inset 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.p4-cell.winning.player2 {
+  box-shadow: 
+    0 0 100px rgba(255, 217, 61, 1), 
+    0 0 150px rgba(124, 255, 178, 1), 
+    0 0 200px rgba(124, 255, 178, 0.9),
+    0 0 280px rgba(255, 217, 61, 0.7),
+    inset 0 2px 6px rgba(0, 0, 0, 0.3);
 }
 
 /* ---- Game Messages ---- */
@@ -204,12 +846,105 @@
 
 .p4-message.win {
   color: #7CFFB2;
-  animation: pulse-win 0.6s ease;
+  animation: winMessageUltra 1.2s ease-out, winGlowUltra 2s ease-in-out infinite;
+  font-size: 32px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 4px;
 }
 
-@keyframes pulse-win {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.05); }
+@keyframes winMessageUltra {
+  0% {
+    transform: scale(0) rotateX(180deg) rotateY(0deg) rotateZ(0deg);
+    opacity: 0;
+  }
+  20% {
+    transform: scale(1.4) rotateX(90deg) rotateY(180deg) rotateZ(45deg);
+  }
+  40% {
+    transform: scale(0.9) rotateX(180deg) rotateY(360deg) rotateZ(90deg);
+  }
+  60% {
+    transform: scale(1.3) rotateX(270deg) rotateY(540deg) rotateZ(180deg);
+  }
+  80% {
+    transform: scale(0.95) rotateX(360deg) rotateY(720deg) rotateZ(270deg);
+  }
+  100% {
+    transform: scale(1) rotateX(360deg) rotateY(720deg) rotateZ(360deg);
+    opacity: 1;
+  }
+}
+
+@keyframes winGlowUltra {
+  0%, 100% {
+    text-shadow: 
+      0 0 30px rgba(124, 255, 178, 0.8), 
+      0 0 60px rgba(124, 255, 178, 0.6), 
+      0 0 90px rgba(255, 107, 107, 0.5),
+      0 2px 8px rgba(0, 0, 0, 0.3);
+    color: #7CFFB2;
+  }
+  15% {
+    text-shadow: 
+      0 0 50px rgba(124, 255, 178, 1), 
+      0 0 100px rgba(124, 255, 178, 1), 
+      0 0 150px rgba(255, 215, 61, 0.8),
+      0 0 200px rgba(124, 255, 178, 0.6),
+      0 2px 8px rgba(0, 0, 0, 0.3);
+    color: #ffffff;
+    transform: scale(1.15);
+  }
+  30% {
+    text-shadow: 
+      0 0 80px rgba(124, 255, 178, 1), 
+      0 0 140px rgba(124, 255, 178, 1), 
+      0 0 200px rgba(255, 107, 107, 1),
+      0 0 280px rgba(124, 255, 178, 0.7),
+      0 2px 8px rgba(0, 0, 0, 0.3);
+    color: #ff6b6b;
+    transform: scale(1.25);
+  }
+  45% {
+    text-shadow: 
+      0 0 100px rgba(255, 217, 61, 1), 
+      0 0 160px rgba(124, 255, 178, 1), 
+      0 0 220px rgba(124, 255, 178, 0.9),
+      0 0 300px rgba(255, 217, 61, 0.6),
+      0 2px 8px rgba(0, 0, 0, 0.3);
+    color: #ffd93d;
+    transform: scale(1.2);
+  }
+  60% {
+    text-shadow: 
+      0 0 120px rgba(124, 255, 178, 1), 
+      0 0 180px rgba(124, 255, 178, 1), 
+      0 0 240px rgba(255, 107, 107, 0.9),
+      0 0 320px rgba(124, 255, 178, 0.8),
+      0 2px 8px rgba(0, 0, 0, 0.3);
+    color: #7CFFB2;
+    transform: scale(1.1);
+  }
+  75% {
+    text-shadow: 
+      0 0 140px rgba(124, 255, 178, 1), 
+      0 0 200px rgba(124, 255, 178, 1), 
+      0 0 260px rgba(255, 217, 61, 0.8),
+      0 0 340px rgba(124, 255, 178, 0.7),
+      0 2px 8px rgba(0, 0, 0, 0.3);
+    color: #ffffff;
+    transform: scale(1.18);
+  }
+  90% {
+    text-shadow: 
+      0 0 160px rgba(124, 255, 178, 1), 
+      0 0 220px rgba(124, 255, 178, 1), 
+      0 0 280px rgba(255, 107, 107, 0.9),
+      0 0 360px rgba(124, 255, 178, 0.8),
+      0 2px 8px rgba(0, 0, 0, 0.3);
+    color: #ff6b6b;
+    transform: scale(1.08);
+  }
 }
 
 /* ---- Responsive ---- */
