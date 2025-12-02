@@ -337,10 +337,10 @@ class Puissance4 {
     }
   }
 
-  // Créer des confettis qui tombent
+  // Créer des confettis qui tombent en MASSE INCROYABLE
   createConfetti() {
-    const colors = ['#ff6b6b', '#ffd93d', '#7CFFB2', '#7dd3fc', '#ff5252', '#ffc107'];
-    const confettiCount = 80; // Nombre de confettis
+    const colors = ['#ff6b6b', '#ffd93d', '#7CFFB2', '#7dd3fc', '#ff5252', '#ffc107', '#00ff00', '#ff00ff'];
+    const confettiCount = 200; // 2.5x plus de confettis!
 
     for (let i = 0; i < confettiCount; i++) {
       const confetti = document.createElement('div');
@@ -348,8 +348,8 @@ class Puissance4 {
       confetti.style.left = Math.random() * 100 + 'vw';
       confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
       
-      const duration = 2 + Math.random() * 1.5; // Entre 2 et 3.5 secondes
-      const delay = Math.random() * 0.5; // Délai variable
+      const duration = 1.5 + Math.random() * 2.5; // Durée variable plus longue
+      const delay = Math.random() * 0.8; // Délai variable plus grand
       const animationName = Math.random() > 0.5 ? 
         (Math.random() > 0.5 ? 'confettiFall' : 'confettiFallLeft') :
         (Math.random() > 0.5 ? 'confettiFallWide' : 'confettiFallWideLeft');
@@ -363,9 +363,9 @@ class Puissance4 {
     }
   }
 
-  // Créer des explosions et ondes de choc AMPLIFIÉES MASSIVES
+  // Créer des explosions et ondes de choc AMPLIFIÉES HYPER MASSIVES
   createExplosions() {
-    const explosionCount = 150; // 9x plus d'explosions!
+    const explosionCount = 250; // 15x plus d'explosions! CHAOS TOTAL!
 
     for (let i = 0; i < explosionCount; i++) {
       const explosion = document.createElement('div');
@@ -377,13 +377,13 @@ class Puissance4 {
       
       explosion.style.left = randomX + 'px';
       explosion.style.top = randomY + 'px';
-      explosion.style.width = (20 + Math.random() * 80) + 'px'; // Plus gros
+      explosion.style.width = (15 + Math.random() * 120) + 'px'; // Encore plus gros
       explosion.style.height = explosion.style.width;
       explosion.style.marginLeft = '-' + (parseInt(explosion.style.width) / 2) + 'px';
       explosion.style.marginTop = '-' + (parseInt(explosion.style.width) / 2) + 'px';
       
-      const duration = 0.4 + Math.random() * 0.6;
-      const delay = Math.random() * 0.3;
+      const duration = 0.3 + Math.random() * 0.8;
+      const delay = Math.random() * 0.4;
       explosion.style.animation = `explosionBurst ${duration}s ease-out ${delay}s forwards`;
       
       document.body.appendChild(explosion);
@@ -392,7 +392,7 @@ class Puissance4 {
       setTimeout(() => explosion.remove(), (duration + delay) * 1000);
 
       // Créer une onde de choc au même endroit
-      const shockWaveDelay = delay + 0.08;
+      const shockWaveDelay = delay + 0.05;
       setTimeout(() => {
         const shock = document.createElement('div');
         shock.className = 'explosion shock';
@@ -403,7 +403,7 @@ class Puissance4 {
         shock.style.marginLeft = '0px';
         shock.style.marginTop = '0px';
         
-        const shockDuration = 0.8;
+        const shockDuration = 1.2;
         shock.style.animation = `shockWave ${shockDuration}s ease-out forwards`;
         
         document.body.appendChild(shock);
@@ -419,21 +419,21 @@ class Puissance4 {
     // Créer des particules
     this.createParticleBurst();
     
-    // Flash blanc intense
+    // Flash blanc intense MASSIF
     this.createWhiteFlash();
   }
 
-  // Créer des éclairs/lightning
+  // Créer des éclairs/lightning HYPER INTENSES
   createLightning() {
-    const lightningCount = 8;
+    const lightningCount = 20; // 2.5x plus d'éclairs
     for (let i = 0; i < lightningCount; i++) {
       const lightning = document.createElement('div');
       lightning.className = 'lightning';
       
       const randomX = Math.random() * window.innerWidth;
       const randomY = Math.random() * window.innerHeight;
-      const width = 5 + Math.random() * 15;
-      const height = 100 + Math.random() * 300;
+      const width = 3 + Math.random() * 25;
+      const height = 150 + Math.random() * 400;
       
       lightning.style.left = randomX + 'px';
       lightning.style.top = randomY + 'px';
@@ -441,40 +441,40 @@ class Puissance4 {
       lightning.style.height = height + 'px';
       lightning.style.transform = `rotate(${Math.random() * 360}deg)`;
       
-      const delay = Math.random() * 0.4;
-      lightning.style.animation = `lightning 0.3s ease-in-out ${delay}s forwards`;
+      const delay = Math.random() * 0.5;
+      lightning.style.animation = `lightning 0.4s ease-in-out ${delay}s forwards`;
       
       document.body.appendChild(lightning);
-      setTimeout(() => lightning.remove(), (0.3 + delay) * 1000);
+      setTimeout(() => lightning.remove(), (0.4 + delay) * 1000);
     }
   }
 
-  // Créer une explosion de particules
+  // Créer une explosion de particules HYPER CHAOTIQUE
   createParticleBurst() {
     const boardRect = document.getElementById('board').getBoundingClientRect();
     const centerX = boardRect.left + boardRect.width / 2;
     const centerY = boardRect.top + boardRect.height / 2;
-    const particleCount = 60;
-    const colors = ['#ff6b6b', '#ffd93d', '#7CFFB2', '#ff5252', '#ffc107', '#7dd3fc'];
+    const particleCount = 150; // 2.5x plus de particules!
+    const colors = ['#ff6b6b', '#ffd93d', '#7CFFB2', '#ff5252', '#ffc107', '#7dd3fc', '#00ff00', '#ff00ff', '#00ffff'];
 
     for (let i = 0; i < particleCount; i++) {
       const particle = document.createElement('div');
       particle.className = 'particle';
       particle.style.background = colors[Math.floor(Math.random() * colors.length)];
-      particle.style.width = (5 + Math.random() * 15) + 'px';
+      particle.style.width = (3 + Math.random() * 25) + 'px'; // Plus gros
       particle.style.height = particle.style.width;
       particle.style.left = centerX + 'px';
       particle.style.top = centerY + 'px';
       
       const angle = (i / particleCount) * Math.PI * 2;
-      const distance = 200 + Math.random() * 300;
+      const distance = 100 + Math.random() * 500; // Distance plus variable
       const tx = Math.cos(angle) * distance;
       const ty = Math.sin(angle) * distance;
       
       particle.style.setProperty('--tx', tx + 'px');
       particle.style.setProperty('--ty', ty + 'px');
       
-      const duration = 0.8 + Math.random() * 0.6;
+      const duration = 0.6 + Math.random() * 1;
       particle.style.animation = `particleBurst ${duration}s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards`;
       
       document.body.appendChild(particle);
@@ -482,7 +482,37 @@ class Puissance4 {
     }
   }
 
-  // Créer des messages moqueurs pour le joueur perdant
+  // Créer un GROS flash blanc MASSIF et aveuglant
+  createWhiteFlash() {
+    // Premier flash - ultra massif et aveuglant
+    const flash1 = document.createElement('div');
+    flash1.className = 'white-flash mega';
+    document.body.appendChild(flash1);
+    
+    // Deuxième flash décalé - rebond
+    setTimeout(() => {
+      const flash2 = document.createElement('div');
+      flash2.className = 'white-flash';
+      flash2.style.animation = 'megaWhiteFlash 0.5s ease-out forwards';
+      document.body.appendChild(flash2);
+      setTimeout(() => flash2.remove(), 500);
+    }, 150);
+    
+    // Troisième flash encore plus massif
+    setTimeout(() => {
+      const flash3 = document.createElement('div');
+      flash3.className = 'white-flash mega';
+      flash3.style.animation = 'megaWhiteFlash 0.7s ease-out forwards';
+      flash3.style.filter = 'brightness(1.5)';
+      document.body.appendChild(flash3);
+      setTimeout(() => flash3.remove(), 700);
+    }, 300);
+
+    // Supprimer après animation
+    setTimeout(() => flash1.remove(), 800);
+  }
+
+  // Créer des messages moqueurs MASSIFS pour le joueur perdant
   createMockMessages() {
     const mockMessages = [
       "💀 BOOM! 💀",
@@ -499,11 +529,16 @@ class Puissance4 {
       "😱 REKT! 😱",
       "🌪️ WIPEOUT! 🌪️",
       "🚀 TOO EASY! 🚀",
-      "☠️ ANNIHILATED! ☠️"
+      "☠️ ANNIHILATED! ☠️",
+      "🎆 EPIC FAIL! 🎆",
+      "⚡⚡ MEGADESTROY! ⚡⚡",
+      "🔥🔥 INCINERATED! 🔥🔥",
+      "💫 OBLITERATED! 💫",
+      "🌟 UNSTOPPABLE! 🌟"
     ];
 
     const animationTypes = ['bounce', 'shake', 'flip', 'pulse'];
-    const messageCount = 12; // Nombre de messages
+    const messageCount = 25; // Beaucoup plus de messages!
 
     for (let i = 0; i < messageCount; i++) {
       const message = document.createElement('div');

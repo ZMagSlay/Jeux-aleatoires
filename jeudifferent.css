@@ -601,11 +601,22 @@
   }
 }
 
-/* Animation de flash blanc intense avec fade rapide */
+/* Animation de flash blanc intense et MASSIF avec fade rapide */
 @keyframes whiteFlash {
   0% { opacity: 0; }
-  10% { opacity: 1; }
+  5% { opacity: 1; }
+  15% { opacity: 0.95; }
+  20% { opacity: 1; }
   100% { opacity: 0; }
+}
+
+/* Animation de MEGA FLASH blanc AVEUGLANT */
+@keyframes megaWhiteFlash {
+  0% { opacity: 0; filter: blur(0px); }
+  2% { opacity: 1; filter: blur(20px); }
+  8% { opacity: 1; filter: blur(10px); }
+  15% { opacity: 0.98; filter: blur(0px); }
+  100% { opacity: 0; filter: blur(0px); }
 }
 
 /* Animation d'expansion rapide du plateau */
@@ -724,6 +735,13 @@
   background: white;
   pointer-events: none;
   z-index: 9996;
+  animation: megaWhiteFlash 0.6s ease-out forwards;
+}
+
+/* MEGA flash blanc ULTIME */
+.white-flash.mega {
+  animation: megaWhiteFlash 0.8s ease-out forwards;
+  box-shadow: inset 0 0 200px rgba(255, 255, 255, 0.8), 0 0 300px rgba(255, 255, 255, 0.9);
 }
 
 /* Messages de moquerie */
@@ -780,33 +798,33 @@
   border: 2px solid rgba(124, 255, 178, 0.6);
 }
 
-/* Les jetons gagnants: effets ULTRA EXTRÊMES - 22+ animations de FOLIE! */
+/* Les jetons gagnants: effets ULTRA EXTRÊMES - 24+ animations de FOLIE COMPLÈTE! */
 .p4-cell.winning {
   animation: 
-    winPulseUltra 0.4s ease-in-out 12,
+    winPulseUltra 0.4s ease-in-out infinite,
     winSpinUltra 2.5s linear infinite,
     winBounceUltra 1.8s ease-in-out infinite,
-    winFlash 0.25s ease-in-out infinite,
-    winShake 0.15s ease-in-out infinite,
-    winZoomPulse 0.6s ease-in-out infinite,
-    winFastSpin 0.8s linear infinite,
-    winGlowPulse 0.5s ease-in-out infinite,
-    winSkew 0.7s ease-in-out infinite,
-    winFlip 3s linear infinite,
-    winHueShift 2s linear infinite,
-    winWobble 0.5s ease-in-out infinite,
-    winBreath 1.2s ease-in-out infinite,
-    winStrobe 0.6s steps(2, end) infinite,
-    winBorderGlow 1.5s ease-in-out infinite,
-    winWaveExpand 0.9s ease-in-out infinite,
-    winSpinReverse 2s linear infinite,
-    winDance 0.8s ease-in-out infinite,
-    winPopOut 0.7s cubic-bezier(0.68, -0.55, 0.27, 1.55) infinite,
-    winFlipH 2s linear infinite,
-    winChromatic 0.6s ease-in-out infinite,
-    winGlitch 0.2s ease-in-out infinite,
-    winRainbow 1.8s linear infinite,
-    winChaos 1.1s ease-in-out infinite
+    winFlash 0.15s ease-in-out infinite,
+    winShake 0.1s ease-in-out infinite,
+    winZoomPulse 0.5s ease-in-out infinite,
+    winFastSpin 0.6s linear infinite,
+    winGlowPulse 0.4s ease-in-out infinite,
+    winSkew 0.5s ease-in-out infinite,
+    winFlip 2.5s linear infinite,
+    winHueShift 1.5s linear infinite,
+    winWobble 0.4s ease-in-out infinite,
+    winBreath 1s ease-in-out infinite,
+    winStrobe 0.4s steps(2, end) infinite,
+    winBorderGlow 1.2s ease-in-out infinite,
+    winWaveExpand 0.7s ease-in-out infinite,
+    winSpinReverse 1.8s linear infinite,
+    winDance 0.6s ease-in-out infinite,
+    winPopOut 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55) infinite,
+    winFlipH 1.8s linear infinite,
+    winChromatic 0.5s ease-in-out infinite,
+    winGlitch 0.15s ease-in-out infinite,
+    winRainbow 1.4s linear infinite,
+    winChaos 0.9s ease-in-out infinite
     !important;
   border-color: #7CFFB2;
 }
