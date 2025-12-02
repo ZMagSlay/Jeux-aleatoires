@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Puissance 4</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="jeudifferent.css">
+</head>
+<body>
+  <div class="topbar">
+    <a href="index.html" class="home-link">← Accueil</a>
+    <h1 style="margin: 0; flex: 1; text-align: center; font-size: 24px;">Puissance 4</h1>
+  </div>
+
+  <div class="game-container-p4">
+    <div class="p4-info">
+      <div class="p4-player-info">
+        <div class="p4-player-turn">
+          <span class="p4-turn-label">Joueur actuel:</span>
+          <span class="p4-player-name" id="currentPlayerName">Joueur 1</span>
+        </div>
+        <div class="p4-score-board">
+          <div class="p4-player-score">
+            <span class="p4-color-indicator player1"></span>
+            <span id="player1Name">Joueur 1</span>: <span id="player1Score">0</span>
+          </div>
+          <div class="p4-player-score">
+            <span class="p4-color-indicator player2"></span>
+            <span id="player2Name">Joueur 2</span>: <span id="player2Score">0</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="p4-controls">
+        <button class="btn btn-p4" id="newGameBtn">Nouvelle partie</button>
+        <button class="btn btn-p4 btn.ghost" id="resetScoreBtn">Réinitialiser scores</button>
+      </div>
+
+      <div class="p4-stats">
+        <div class="p4-stat-item">
+          <span class="p4-stat-label">Parties jouées:</span>
+          <span id="gamesPlayed">0</span>
+        </div>
+        <div class="p4-stat-item">
+          <span class="p4-stat-label">Égalités:</span>
+          <span id="draws">0</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="p4-board-container">
+      <div class="p4-board" id="board">
+        <!-- Les colonnes seront générées par JavaScript -->
+      </div>
+      <div class="p4-message" id="gameMessage"></div>
+    </div>
+  </div>
+
+  <script src="jeudifferent.js"></script>
+</body>
+</html>
