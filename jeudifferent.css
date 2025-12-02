@@ -1,5 +1,41 @@
 /* ---- Puissance 4 Game Styles ---- */
 
+/* Styles pour les inputs de nom du joueur dans la grille */
+.name-input-p4 {
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--accent);
+  padding: 4px 6px;
+  outline: none;
+  text-align: center;
+}
+
+.name-input-p4:focus {
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) inset;
+  border-radius: 4px;
+}
+
+.name-input-p4::placeholder {
+  color: rgba(230, 238, 248, 0.44);
+  text-align: center;
+}
+
+/* Styles pour les inputs de couleur */
+.color-input {
+  width: 24px;
+  height: 24px;
+  border: none;
+  padding: 0;
+  background: none;
+  cursor: pointer;
+  -webkit-appearance: none !important;
+  appearance: none;
+}
+
 .game-container-p4 {
   display: flex;
   gap: 30px;
@@ -205,47 +241,768 @@
   box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.3);
 }
 
-/* Animation de chute avec rebond pour les jetons */
-@keyframes tokenFall {
-  0% { transform: translateY(-50px); opacity: 0; }
-  50% { opacity: 1; }
-  100% { transform: translateY(0); opacity: 1; }
+/* Animation de chute du jeton depuis le haut */
+/* Réglables */
+:root {
+  --drop-distance: -420px;
+  --drop-duration: 1.25s;      /* durée par défaut */
+  --drop-ease: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
+/* Un seul rebond : approche, impact (compression), un seul overshoot, puis stabilisation */
+@keyframes dropToken {
+  0% {
+    transform: translateY(var(--drop-distance)) scaleX(0.98) scaleY(1.02);
+    opacity: 0;
+  }
+
+  12% {
+    opacity: 1;
+  }
+
+  /* proche du sol : vitesse contrôlée */
+  66% {
+    transform: translateY(6px) scaleX(0.995) scaleY(1.00);
+  }
+
+  /* impact net : compression horizontale pour donner du "poids" */
+  74% {
+    transform: translateY(0px) scaleX(1.06) scaleY(0.94);
+  }
+
+  /* unique rebond : remontée modérée (pas trop haute) */
+  88% {
+    transform: translateY(-10px) scaleX(0.99) scaleY(1.01);
+  }
+
+  /* stabilisation finale */
+  100% {
+    transform: translateY(0px) scaleX(1) scaleY(1);
+    opacity: 1;
+  }
+}
+
+/* Application par défaut (plus lourd, un seul rebond) */
 .p4-cell.player1,
 .p4-cell.player2 {
-  animation: tokenFall 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+  will-change: transform, opacity;
+  animation-name: dropToken;
+  animation-duration: var(--drop-duration);
+  animation-timing-function: var(--drop-ease);
+  animation-fill-mode: both;
+  animation-iteration-count: 1;
 }
 
-/* Animation de chute du jeton depuis le haut */
-@keyframes dropToken {
-  from {
+/* Quand la classe .dropping est utilisée : un poil plus lente et plus marquée */
+.p4-cell.player1.dropping,
+.p4-cell.player2.dropping {
+  --drop-duration: 1.6s;
+  --drop-ease: cubic-bezier(0.18, 1.05, 0.28, 1);
+  animation-name: dropToken;
+  animation-duration: var(--drop-duration);
+  animation-timing-function: var(--drop-ease);
+  animation-fill-mode: both;
+  animation-iteration-count: 1;
+  animation-delay: 0s !important;
+}
+
+/* Accessibilité : réduire le mouvement si demandé */
+@media (prefers-reduced-motion: reduce) {
+  .p4-cell.player1,
+  .p4-cell.player2,
+  .p4-cell.player1.dropping,
+  .p4-cell.player2.dropping {
+    animation: none !important;
+    transform: translateY(0) scaleX(1) scaleY(1);
     opacity: 1;
-    transform: translateY(-400px) scale(1);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
   }
 }
 
-/* Classe spécifique pour le jeton qui vient d'être posé */
-.p4-cell.dropping {
-  animation: dropToken 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards !important;
-}
+/* Classe spécifique pour le jeton qui vient d'être posé - voir .p4-cell.player1.dropping et .p4-cell.player2.dropping */
 
 .p4-cell.player1 {
   background: #ff6b6b;
   border-color: #ff5252;
   box-shadow: 0 0 15px rgba(255, 107, 107, 0.5), inset 0 2px 6px rgba(0, 0, 0, 0.3);
-  animation: none !important;
+}
+
+.p4-cell.player1.dropping {
+  animation: dropToken 0.7s cubic-bezier(0.25, 0.8, 0.25, 1) forwards !important;
 }
 
 .p4-cell.player2 {
   background: #ffd93d;
   border-color: #ffc107;
   box-shadow: 0 0 15px rgba(255, 217, 61, 0.5), inset 0 2px 6px rgba(0, 0, 0, 0.3);
-  animation: none !important;
+}
+
+.p4-cell.player2.dropping {
+  animation: dropToken 0.7s cubic-bezier(0.25, 0.8, 0.25, 1) forwards !important;
+}
+
+/* Token skins using body data attribute (separate per player) */
+[data-token-skin-1="metal"] .p4-cell.player1 {
+  background: linear-gradient(135deg, #ff6b6b 0%, #ff2d2d 100%);
+  border-color: #ff1a1a;
+  box-shadow: 0 0 30px rgba(255, 60, 60, 0.8), inset 0 -4px 10px rgba(0,0,0,0.4);
+}
+[data-token-skin-2="metal"] .p4-cell.player2 {
+  background: linear-gradient(135deg, #ffd93d 0%, #ffb200 100%);
+  border-color: #ff9b00;
+  box-shadow: 0 0 30px rgba(255, 180, 60, 0.8), inset 0 -4px 10px rgba(0,0,0,0.3);
+}
+
+[data-token-skin-1="neon"] .p4-cell.player1 {
+  background: radial-gradient(circle at 30% 30%, #ff9a9a 0%, #ff6b6b 40%, #ff3b3b 100%);
+  box-shadow: 0 0 18px #ff6b6b, 0 0 40px #ff3b3b;
+  border-color: #ff3b3b;
+}
+[data-token-skin-2="neon"] .p4-cell.player2 {
+  background: radial-gradient(circle at 30% 30%, #fff1a8 0%, #ffd93d 40%, #ffcc00 100%);
+  box-shadow: 0 0 18px #ffd93d, 0 0 40px #ffcd00;
+  border-color: #ffc107;
+}
+
+[data-token-skin-1="pixel"] .p4-cell.player1 {
+  background: repeating-linear-gradient(45deg, #ff6b6b 0 6px, #ff5252 6px 12px);
+  border-color: #ff5252;
+  box-shadow: none;
+}
+[data-token-skin-2="pixel"] .p4-cell.player2 {
+  background: repeating-linear-gradient(45deg, #ffd93d 0 6px, #ffcc00 6px 12px);
+  border-color: #ffcc00;
+  box-shadow: none;
+}
+
+/* COMMON SKINS */
+[data-token-skin-1="stone"] .p4-cell.player1 {
+  background: 
+    radial-gradient(circle at 25% 25%, #d0d0d0 0%, #d0d0d0 15%, transparent 15%),
+    radial-gradient(circle at 75% 75%, #555555 0%, #555555 10%, transparent 10%),
+    linear-gradient(135deg, #a0a0a0 0%, #696969 100%);
+  border-color: #505050;
+  box-shadow: 0 0 15px rgba(80, 80, 80, 0.6), inset 0 -3px 8px rgba(0,0,0,0.7), inset 2px 2px 4px rgba(255,255,255,0.2);
+}
+[data-token-skin-2="stone"] .p4-cell.player2 {
+  background: 
+    radial-gradient(circle at 25% 25%, #eeeeee 0%, #eeeeee 15%, transparent 15%),
+    radial-gradient(circle at 75% 75%, #707070 0%, #707070 10%, transparent 10%),
+    linear-gradient(135deg, #c0c0c0 0%, #808080 100%);
+  border-color: #606060;
+  box-shadow: 0 0 15px rgba(100, 100, 100, 0.5), inset 0 -3px 8px rgba(0,0,0,0.5), inset 2px 2px 4px rgba(255,255,255,0.3);
+}
+
+[data-token-skin-1="clay"] .p4-cell.player1 {
+  background: 
+    repeating-linear-gradient(45deg, rgba(212, 118, 79, 0.8) 0, rgba(212, 118, 79, 0.8) 2px, transparent 2px, transparent 4px),
+    repeating-linear-gradient(-45deg, rgba(165, 76, 42, 0.7) 0, rgba(165, 76, 42, 0.7) 2px, transparent 2px, transparent 4px),
+    linear-gradient(135deg, #d4764f 0%, #a54c2a 100%);
+  border-color: #8b3a1a;
+  box-shadow: 0 0 18px rgba(180, 100, 60, 0.6), inset 0 -3px 6px rgba(0,0,0,0.4);
+}
+[data-token-skin-2="clay"] .p4-cell.player2 {
+  background: 
+    repeating-linear-gradient(45deg, rgba(232, 168, 124, 0.8) 0, rgba(232, 168, 124, 0.8) 2px, transparent 2px, transparent 4px),
+    repeating-linear-gradient(-45deg, rgba(200, 122, 82, 0.7) 0, rgba(200, 122, 82, 0.7) 2px, transparent 2px, transparent 4px),
+    linear-gradient(135deg, #e8a87c 0%, #c87a52 100%);
+  border-color: #a85a32;
+  box-shadow: 0 0 18px rgba(210, 150, 100, 0.6), inset 0 -3px 6px rgba(0,0,0,0.3);
+}
+
+[data-token-skin-1="plastic"] .p4-cell.player1 {
+  background: 
+    radial-gradient(circle at 35% 35%, #ffaaaa 0%, #ffaaaa 8%, transparent 8%),
+    linear-gradient(90deg, #ff7777 0%, #ff3333 50%, #ff7777 100%);
+  border-color: #ff0000;
+  box-shadow: 0 0 20px rgba(255, 100, 100, 0.7), inset 0 2px 6px rgba(255,255,255,0.4);
+}
+[data-token-skin-2="plastic"] .p4-cell.player2 {
+  background: 
+    radial-gradient(circle at 35% 35%, #ffff99 0%, #ffff99 8%, transparent 8%),
+    linear-gradient(90deg, #ffe066 0%, #ffcc00 50%, #ffe066 100%);
+  border-color: #ffbb00;
+  box-shadow: 0 0 20px rgba(255, 220, 100, 0.7), inset 0 2px 6px rgba(255,255,255,0.4);
+}
+
+/* Additional UNCOMMON skins */
+[data-token-skin-1="marble"] .p4-cell.player1 {
+  background: 
+    repeating-radial-gradient(circle at 15% 15%, rgba(200, 200, 200, 0.5) 0%, rgba(200, 200, 200, 0.5) 3px, transparent 3px, transparent 6px),
+    repeating-radial-gradient(circle at 70% 70%, rgba(150, 150, 150, 0.4) 0%, rgba(150, 150, 150, 0.4) 4px, transparent 4px, transparent 8px),
+    linear-gradient(135deg, #ff8888 0%, #ff5555 100%);
+  border-color: #ff3333;
+  box-shadow: 0 0 20px rgba(255, 100, 100, 0.5), inset 0 2px 8px rgba(255,255,255,0.3);
+}
+[data-token-skin-2="marble"] .p4-cell.player2 {
+  background: 
+    repeating-radial-gradient(circle at 15% 15%, rgba(255, 255, 200, 0.5) 0%, rgba(255, 255, 200, 0.5) 3px, transparent 3px, transparent 6px),
+    repeating-radial-gradient(circle at 70% 70%, rgba(255, 240, 150, 0.4) 0%, rgba(255, 240, 150, 0.4) 4px, transparent 4px, transparent 8px),
+    linear-gradient(135deg, #ffee99 0%, #ffdd55 100%);
+  border-color: #ffcc00;
+  box-shadow: 0 0 20px rgba(255, 200, 100, 0.5), inset 0 2px 8px rgba(255,255,255,0.3);
+}
+
+[data-token-skin-1="retro"] .p4-cell.player1 {
+  background: 
+    linear-gradient(45deg, #ff6b6b 0%, #ff6b6b 25%, #ff3333 25%, #ff3333 50%, #ff6b6b 50%, #ff6b6b 75%, #ff3333 75%, #ff3333 100%);
+  background-size: 20px 20px;
+  border-color: #ff1111;
+  box-shadow: 0 0 15px rgba(255, 107, 107, 0.6);
+}
+[data-token-skin-2="retro"] .p4-cell.player2 {
+  background: 
+    linear-gradient(45deg, #ffdd66 0%, #ffdd66 25%, #ffcc00 25%, #ffcc00 50%, #ffdd66 50%, #ffdd66 75%, #ffcc00 75%, #ffcc00 100%);
+  background-size: 20px 20px;
+  border-color: #ffbb00;
+  box-shadow: 0 0 15px rgba(255, 200, 100, 0.6);
+}
+
+[data-token-skin-1="wood"] .p4-cell.player1 {
+  background: 
+    repeating-linear-gradient(90deg, rgba(139, 69, 19, 0.4) 0px, rgba(139, 69, 19, 0.4) 2px, transparent 2px, transparent 4px),
+    repeating-linear-gradient(0deg, rgba(160, 82, 45, 0.3) 0px, rgba(160, 82, 45, 0.3) 3px, transparent 3px, transparent 6px),
+    linear-gradient(135deg, #d2691e 0%, #8b4513 100%);
+  border-color: #654321;
+  box-shadow: 0 0 20px rgba(160, 80, 40, 0.6), inset 0 -2px 6px rgba(0,0,0,0.4);
+}
+[data-token-skin-2="wood"] .p4-cell.player2 {
+  background: 
+    repeating-linear-gradient(90deg, rgba(184, 115, 51, 0.4) 0px, rgba(184, 115, 51, 0.4) 2px, transparent 2px, transparent 4px),
+    repeating-linear-gradient(0deg, rgba(205, 133, 63, 0.3) 0px, rgba(205, 133, 63, 0.3) 3px, transparent 3px, transparent 6px),
+    linear-gradient(135deg, #daa520 0%, #cd853f 100%);
+  border-color: #996633;
+  box-shadow: 0 0 20px rgba(200, 120, 60, 0.6), inset 0 -2px 6px rgba(0,0,0,0.3);
+}
+
+/* UNCOMMON SKINS */
+[data-token-skin-1="camo"] .p4-cell.player1 {
+  background: 
+    radial-gradient(circle at 15% 20%, rgba(139, 69, 19, 0.6) 0%, transparent 12%),
+    radial-gradient(circle at 70% 65%, rgba(139, 69, 19, 0.5) 0%, transparent 15%),
+    radial-gradient(circle at 35% 80%, rgba(101, 67, 33, 0.7) 0%, transparent 10%),
+    linear-gradient(135deg, #8b4513 0%, #654321 100%);
+  border-color: #5a3a1a;
+  box-shadow: 0 0 20px rgba(139, 69, 19, 0.5), inset 0 -2px 8px rgba(0,0,0,0.5);
+}
+[data-token-skin-2="camo"] .p4-cell.player2 {
+  background: 
+    radial-gradient(circle at 15% 20%, rgba(184, 134, 11, 0.6) 0%, transparent 12%),
+    radial-gradient(circle at 70% 65%, rgba(184, 134, 11, 0.5) 0%, transparent 15%),
+    radial-gradient(circle at 35% 80%, rgba(189, 169, 31, 0.7) 0%, transparent 10%),
+    linear-gradient(135deg, #b8860b 0%, #bda91f 100%);
+  border-color: #8b6914;
+  box-shadow: 0 0 20px rgba(184, 134, 11, 0.5), inset 0 -2px 8px rgba(0,0,0,0.4);
+}
+
+[data-token-skin-1="glass"] .p4-cell.player1 {
+  background: 
+    radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.9) 0%, transparent 20%),
+    linear-gradient(135deg, rgba(255, 107, 107, 0.8) 0%, rgba(200, 50, 50, 0.95) 100%);
+  border-color: #ff3333;
+  box-shadow: 0 0 30px rgba(255, 107, 107, 0.8), inset 0 3px 12px rgba(255,255,255,0.5), inset -3px -3px 10px rgba(0,0,0,0.3);
+}
+[data-token-skin-2="glass"] .p4-cell.player2 {
+  background: 
+    radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.9) 0%, transparent 20%),
+    linear-gradient(135deg, rgba(255, 217, 61, 0.8) 0%, rgba(220, 180, 0, 0.95) 100%);
+  border-color: #ffcc00;
+  box-shadow: 0 0 30px rgba(255, 217, 61, 0.8), inset 0 3px 12px rgba(255,255,255,0.5), inset -3px -3px 10px rgba(0,0,0,0.2);
+}
+
+[data-token-skin-1="rust"] .p4-cell.player1 {
+  background: 
+    repeating-radial-gradient(circle at 20% 20%, rgba(150, 75, 0, 0.4) 0%, rgba(150, 75, 0, 0.4) 3px, transparent 3px, transparent 6px),
+    repeating-radial-gradient(circle at 60% 40%, rgba(170, 85, 0, 0.35) 0%, rgba(170, 85, 0, 0.35) 4px, transparent 4px, transparent 8px),
+    linear-gradient(135deg, #b8554d 0%, #7d3f34 100%);
+  border-color: #5a2a1f;
+  box-shadow: 0 0 20px rgba(139, 69, 35, 0.6), inset 0 -3px 8px rgba(0,0,0,0.5);
+}
+[data-token-skin-2="rust"] .p4-cell.player2 {
+  background: 
+    repeating-radial-gradient(circle at 20% 20%, rgba(200, 120, 50, 0.4) 0%, rgba(200, 120, 50, 0.4) 3px, transparent 3px, transparent 6px),
+    repeating-radial-gradient(circle at 60% 40%, rgba(220, 140, 70, 0.35) 0%, rgba(220, 140, 70, 0.35) 4px, transparent 4px, transparent 8px),
+    linear-gradient(135deg, #d4945f 0%, #b87345 100%);
+  border-color: #8b5a2b;
+  box-shadow: 0 0 20px rgba(180, 100, 60, 0.6), inset 0 -3px 8px rgba(0,0,0,0.4);
+}
+
+[data-token-skin-1="ocean"] .p4-cell.player1 {
+  background: 
+    repeating-linear-gradient(90deg, transparent 0px, transparent 3px, rgba(70, 180, 255, 0.3) 3px, rgba(70, 180, 255, 0.3) 6px),
+    repeating-linear-gradient(0deg, transparent 0px, transparent 3px, rgba(30, 150, 255, 0.25) 3px, rgba(30, 150, 255, 0.25) 6px),
+    linear-gradient(135deg, #2b7fa8 0%, #1a4d6d 100%);
+  border-color: #0e2a42;
+  box-shadow: 0 0 25px rgba(51, 153, 255, 0.7), inset 0 2px 8px rgba(150,220,255,0.3);
+}
+[data-token-skin-2="ocean"] .p4-cell.player2 {
+  background: 
+    repeating-linear-gradient(90deg, transparent 0px, transparent 3px, rgba(100, 200, 255, 0.3) 3px, rgba(100, 200, 255, 0.3) 6px),
+    repeating-linear-gradient(0deg, transparent 0px, transparent 3px, rgba(70, 180, 255, 0.25) 3px, rgba(70, 180, 255, 0.25) 6px),
+    linear-gradient(135deg, #4fa8d4 0%, #2a7da8 100%);
+  border-color: #1a4d7d;
+  box-shadow: 0 0 25px rgba(102, 204, 255, 0.7), inset 0 2px 8px rgba(180,230,255,0.3);
+}
+
+[data-token-skin-1="fire"] .p4-cell.player1 {
+  background: 
+    radial-gradient(circle at 30% 40%, rgba(255, 200, 100, 0.8) 0%, transparent 35%),
+    radial-gradient(circle at 70% 70%, rgba(255, 100, 0, 0.6) 0%, transparent 30%),
+    linear-gradient(135deg, #dd3311 0%, #880000 100%);
+  border-color: #550000;
+  box-shadow: 0 0 35px rgba(255, 100, 0, 0.9), 0 0 60px rgba(255, 50, 0, 0.5), inset 0 2px 8px rgba(255,150,50,0.3);
+}
+[data-token-skin-2="fire"] .p4-cell.player2 {
+  background: 
+    radial-gradient(circle at 30% 40%, rgba(255, 230, 150, 0.8) 0%, transparent 35%),
+    radial-gradient(circle at 70% 70%, rgba(255, 180, 50, 0.6) 0%, transparent 30%),
+    linear-gradient(135deg, #ff9933 0%, #cc6600 100%);
+  border-color: #885500;
+  box-shadow: 0 0 35px rgba(255, 150, 50, 0.9), 0 0 60px rgba(255, 120, 0, 0.5), inset 0 2px 8px rgba(255,200,100,0.3);
+}
+
+/* RARE SKINS */
+[data-token-skin-1="chrome"] .p4-cell.player1 {
+  background: 
+    linear-gradient(45deg, #f0f0f0 0%, #e0e0e0 50%, #d0d0d0 100%);
+  border-color: #a0a0a0;
+  box-shadow: 0 0 40px rgba(200, 200, 200, 0.9), inset 0 2px 10px rgba(255,255,255,0.6), inset -3px -3px 8px rgba(0,0,0,0.3);
+}
+[data-token-skin-2="chrome"] .p4-cell.player2 {
+  background: 
+    linear-gradient(45deg, #f8f8f8 0%, #e8e8e8 50%, #d8d8d8 100%);
+  border-color: #b0b0b0;
+  box-shadow: 0 0 40px rgba(220, 220, 220, 0.9), inset 0 2px 10px rgba(255,255,255,0.6), inset -3px -3px 8px rgba(0,0,0,0.2);
+}
+
+[data-token-skin-1="gold"] .p4-cell.player1 {
+  background: 
+    radial-gradient(circle at 25% 25%, rgba(255, 255, 150, 0.7) 0%, transparent 20%),
+    linear-gradient(135deg, #ffd700 0%, #daa520 50%, #cd853f 100%);
+  border-color: #b8860b;
+  box-shadow: 0 0 40px rgba(255, 215, 0, 0.9), 0 0 60px rgba(218, 165, 32, 0.6), inset 0 2px 8px rgba(255,255,255,0.4);
+}
+[data-token-skin-2="gold"] .p4-cell.player2 {
+  background: 
+    radial-gradient(circle at 25% 25%, rgba(255, 255, 200, 0.7) 0%, transparent 20%),
+    linear-gradient(135deg, #ffed4e 0%, #ffd966 50%, #daa520 100%);
+  border-color: #cc9900;
+  box-shadow: 0 0 40px rgba(255, 237, 74, 0.9), 0 0 60px rgba(255, 217, 102, 0.6), inset 0 2px 8px rgba(255,255,255,0.4);
+}
+
+[data-token-skin-1="ice"] .p4-cell.player1 {
+  background: 
+    radial-gradient(circle at 30% 30%, rgba(200, 230, 255, 0.8) 0%, transparent 35%),
+    linear-gradient(135deg, #b0e0e6 0%, #87ceeb 50%, #4a90e2 100%);
+  border-color: #1e90ff;
+  box-shadow: 0 0 40px rgba(100, 200, 255, 0.8), 0 0 60px rgba(70, 150, 255, 0.5), inset 0 2px 10px rgba(200,230,255,0.4);
+}
+[data-token-skin-2="ice"] .p4-cell.player2 {
+  background: 
+    radial-gradient(circle at 30% 30%, rgba(220, 240, 255, 0.8) 0%, transparent 35%),
+    linear-gradient(135deg, #d0f0f0 0%, #add8e6 50%, #87ceeb 100%);
+  border-color: #4a90ff;
+  box-shadow: 0 0 40px rgba(150, 220, 255, 0.8), 0 0 60px rgba(120, 180, 255, 0.5), inset 0 2px 10px rgba(220,240,255,0.4);
+}
+
+[data-token-skin-1="silver"] .p4-cell.player1 {
+  background: 
+    radial-gradient(circle at 25% 25%, #ffffff 0%, #ffffff 8%, transparent 8%),
+    radial-gradient(circle at 75% 75%, #666666 0%, #666666 6%, transparent 6%),
+    linear-gradient(135deg, #e8e8e8 0%, #b0b0b0 50%, #808080 100%);
+  border-color: #606060;
+  box-shadow: 0 0 40px rgba(200, 200, 200, 0.8), inset 0 2px 8px rgba(255,255,255,0.6), inset -2px -2px 8px rgba(0,0,0,0.3);
+}
+[data-token-skin-2="silver"] .p4-cell.player2 {
+  background: 
+    radial-gradient(circle at 25% 25%, #ffffff 0%, #ffffff 8%, transparent 8%),
+    radial-gradient(circle at 75% 75%, #7a7a7a 0%, #7a7a7a 6%, transparent 6%),
+    linear-gradient(135deg, #f0f0f0 0%, #c8c8c8 50%, #989898 100%);
+  border-color: #707070;
+  box-shadow: 0 0 40px rgba(220, 220, 220, 0.8), inset 0 2px 8px rgba(255,255,255,0.6), inset -2px -2px 8px rgba(0,0,0,0.2);
+}
+
+[data-token-skin-1="copper"] .p4-cell.player1 {
+  background: 
+    repeating-linear-gradient(0deg, rgba(139, 69, 19, 0.3) 0%, rgba(139, 69, 19, 0.3) 2px, transparent 2px, transparent 4px),
+    linear-gradient(45deg, #b87333 0%, #8b4513 50%, #a0522d 100%);
+  border-color: #6b3410;
+  box-shadow: 0 0 25px rgba(184, 115, 51, 0.8), inset 0 2px 6px rgba(255,200,150,0.4), inset -2px -2px 6px rgba(0,0,0,0.4);
+}
+[data-token-skin-2="copper"] .p4-cell.player2 {
+  background: 
+    repeating-linear-gradient(0deg, rgba(184, 115, 51, 0.3) 0%, rgba(184, 115, 51, 0.3) 2px, transparent 2px, transparent 4px),
+    linear-gradient(45deg, #d4a574 0%, #c97137 50%, #b8860b 100%);
+  border-color: #8b5a00;
+  box-shadow: 0 0 25px rgba(212, 165, 116, 0.8), inset 0 2px 6px rgba(255,220,180,0.4), inset -2px -2px 6px rgba(0,0,0,0.3);
+}
+
+[data-token-skin-1="emerald"] .p4-cell.player1 {
+  background: 
+    radial-gradient(circle at 40% 40%, rgba(100, 255, 150, 0.6) 0%, transparent 30%),
+    linear-gradient(135deg, #1a7d3f 0%, #0d4620 100%);
+  border-color: #052e16;
+  box-shadow: 0 0 30px rgba(34, 170, 102, 0.8), inset 0 2px 10px rgba(100,255,150,0.3), inset -2px -2px 8px rgba(0,0,0,0.4);
+}
+[data-token-skin-2="emerald"] .p4-cell.player2 {
+  background: 
+    radial-gradient(circle at 40% 40%, rgba(150, 255, 180, 0.6) 0%, transparent 30%),
+    linear-gradient(135deg, #2da85f 0%, #1b6e3f 100%);
+  border-color: #0d5a2a;
+  box-shadow: 0 0 30px rgba(85, 204, 153, 0.8), inset 0 2px 10px rgba(150,255,180,0.3), inset -2px -2px 8px rgba(0,0,0,0.3);
+}
+
+[data-token-skin-1="ruby"] .p4-cell.player1 {
+  background: 
+    radial-gradient(circle at 35% 35%, rgba(255, 150, 180, 0.7) 0%, transparent 25%),
+    linear-gradient(135deg, #c4073a 0%, #7a042f 100%);
+  border-color: #4a0220;
+  box-shadow: 0 0 35px rgba(255, 68, 102, 0.9), inset 0 2px 10px rgba(255,150,180,0.3), inset -2px -2px 8px rgba(0,0,0,0.4);
+}
+[data-token-skin-2="ruby"] .p4-cell.player2 {
+  background: 
+    radial-gradient(circle at 35% 35%, rgba(255, 180, 210, 0.7) 0%, transparent 25%),
+    linear-gradient(135deg, #e84a6f 0%, #c4073a 100%);
+  border-color: #7a042f;
+  box-shadow: 0 0 35px rgba(255, 119, 170, 0.9), inset 0 2px 10px rgba(255,180,210,0.3), inset -2px -2px 8px rgba(0,0,0,0.3);
+}
+
+[data-token-skin-1="sapphire"] .p4-cell.player1 {
+  background: 
+    radial-gradient(circle at 35% 35%, rgba(150, 180, 255, 0.7) 0%, transparent 25%),
+    linear-gradient(135deg, #003da8 0%, #001f5c 100%);
+  border-color: #000e2e;
+  box-shadow: 0 0 35px rgba(68, 102, 255, 0.9), inset 0 2px 10px rgba(150,180,255,0.3), inset -2px -2px 8px rgba(0,0,0,0.4);
+}
+[data-token-skin-2="sapphire"] .p4-cell.player2 {
+  background: 
+    radial-gradient(circle at 35% 35%, rgba(180, 210, 255, 0.7) 0%, transparent 25%),
+    linear-gradient(135deg, #2563be 0%, #1a3fa0 100%);
+  border-color: #0f1f6d;
+  box-shadow: 0 0 35px rgba(119, 153, 255, 0.9), inset 0 2px 10px rgba(180,210,255,0.3), inset -2px -2px 8px rgba(0,0,0,0.3);
+}
+
+/* EPIC SKINS */
+[data-token-skin-1="galaxy"] .p4-cell.player1 {
+  background: 
+    radial-gradient(circle at 20% 30%, rgba(255, 150, 200, 0.6) 0%, transparent 15%),
+    radial-gradient(circle at 70% 70%, rgba(100, 200, 255, 0.5) 0%, transparent 20%),
+    radial-gradient(circle at 40% 50%, rgba(200, 100, 255, 0.4) 0%, transparent 25%),
+    linear-gradient(135deg, #1a0033 0%, #330066 50%, #001a33 100%);
+  box-shadow: 0 0 40px rgba(255, 100, 150, 0.8), 0 0 80px rgba(150, 100, 255, 0.6), 0 0 120px rgba(100, 150, 255, 0.3);
+  border-color: #9966ff;
+}
+[data-token-skin-2="galaxy"] .p4-cell.player2 {
+  background: 
+    radial-gradient(circle at 20% 30%, rgba(255, 200, 220, 0.6) 0%, transparent 15%),
+    radial-gradient(circle at 70% 70%, rgba(150, 220, 255, 0.5) 0%, transparent 20%),
+    radial-gradient(circle at 40% 50%, rgba(230, 150, 255, 0.4) 0%, transparent 25%),
+    linear-gradient(135deg, #330033 0%, #663366 50%, #003366 100%);
+  box-shadow: 0 0 40px rgba(255, 150, 200, 0.8), 0 0 80px rgba(200, 150, 255, 0.6), 0 0 120px rgba(150, 200, 255, 0.3);
+  border-color: #cc99ff;
+}
+
+[data-token-skin-1="cosmic"] .p4-cell.player1 {
+  background: 
+    radial-gradient(circle at 20% 20%, #ffff99 0%, transparent 15%),
+    radial-gradient(circle at 80% 25%, #ff99ff 0%, transparent 12%),
+    radial-gradient(circle at 60% 80%, #99ffff 0%, transparent 18%),
+    radial-gradient(circle at 35% 50%, rgba(255, 50, 50, 0.4) 0%, transparent 25%),
+    linear-gradient(135deg, #1a0033 0%, #330066 50%, #0d001a 100%);
+  box-shadow: 0 0 40px #ff5555, 0 0 80px rgba(200, 0, 200, 0.6), 0 0 120px rgba(100, 0, 150, 0.4);
+  border-color: #cc00ff;
+}
+[data-token-skin-2="cosmic"] .p4-cell.player2 {
+  background: 
+    radial-gradient(circle at 20% 20%, #ffff99 0%, transparent 15%),
+    radial-gradient(circle at 80% 25%, #ff99ff 0%, transparent 12%),
+    radial-gradient(circle at 60% 80%, #99ffff 0%, transparent 18%),
+    radial-gradient(circle at 35% 50%, rgba(255, 150, 50, 0.4) 0%, transparent 25%),
+    linear-gradient(135deg, #330022 0%, #663366 50%, #1a0d1a 100%);
+  box-shadow: 0 0 40px #ffdd00, 0 0 80px rgba(220, 100, 150, 0.6), 0 0 120px rgba(180, 80, 150, 0.4);
+  border-color: #ff66cc;
+}
+
+[data-token-skin-1="aurora"] .p4-cell.player1 {
+  background: 
+    linear-gradient(90deg, 
+      #ff0066 0%, 
+      #ff0066 15%,
+      #9900ff 30%,
+      #0066ff 45%,
+      #00ff99 60%,
+      #ffff00 75%,
+      #ff0066 100%
+    );
+  box-shadow: 0 0 30px rgba(255, 0, 102, 0.9), 0 0 60px rgba(150, 0, 255, 0.7), 0 0 90px rgba(0, 255, 153, 0.5);
+  border-color: #ff00ff;
+}
+[data-token-skin-2="aurora"] .p4-cell.player2 {
+  background: 
+    linear-gradient(90deg, 
+      #ffaa77 0%, 
+      #ffaa77 15%,
+      #dd99ff 30%,
+      #99ddff 45%,
+      #99ffdd 60%,
+      #ffff99 75%,
+      #ffaa77 100%
+    );
+  box-shadow: 0 0 30px rgba(255, 170, 119, 0.9), 0 0 60px rgba(221, 153, 255, 0.7), 0 0 90px rgba(153, 255, 221, 0.5);
+  border-color: #ffccff;
+}
+
+[data-token-skin-1="thunder"] .p4-cell.player1 {
+  background: 
+    radial-gradient(circle at 40% 40%, rgba(255, 255, 200, 0.9) 0%, transparent 25%),
+    repeating-linear-gradient(45deg, transparent 0, transparent 2px, rgba(200, 150, 0, 0.3) 2px, rgba(200, 150, 0, 0.3) 4px),
+    linear-gradient(135deg, #ffff00 0%, #ffdd00 30%, #ff8800 100%);
+  box-shadow: 0 0 30px #ffff00, 0 0 60px #ffdd00, 0 0 90px rgba(255, 200, 0, 0.6);
+  border-color: #ffbb00;
+}
+[data-token-skin-2="thunder"] .p4-cell.player2 {
+  background: 
+    radial-gradient(circle at 40% 40%, rgba(255, 255, 220, 0.9) 0%, transparent 25%),
+    repeating-linear-gradient(45deg, transparent 0, transparent 2px, rgba(255, 200, 0, 0.3) 2px, rgba(255, 200, 0, 0.3) 4px),
+    linear-gradient(135deg, #ffff77 0%, #ffff00 30%, #ffaa00 100%);
+  box-shadow: 0 0 30px #ffff55, 0 0 60px #ffdd00, 0 0 90px rgba(255, 220, 0, 0.6);
+  border-color: #ffdd00;
+}
+
+[data-token-skin-1="diamond"] .p4-cell.player1 {
+  background: 
+    linear-gradient(45deg, transparent 30%, rgba(100, 150, 255, 0.4) 30%, rgba(100, 150, 255, 0.4) 70%, transparent 70%),
+    linear-gradient(-45deg, transparent 30%, rgba(150, 200, 255, 0.4) 30%, rgba(150, 200, 255, 0.4) 70%, transparent 70%),
+    linear-gradient(135deg, #ffffff 0%, #e8f0ff 25%, #99ccff 100%);
+  border-color: #4488ff;
+  box-shadow: 0 0 50px rgba(200, 230, 255, 0.9), 0 0 100px rgba(150, 200, 255, 0.6), inset 0 2px 12px rgba(255,255,255,0.7);
+}
+[data-token-skin-2="diamond"] .p4-cell.player2 {
+  background: 
+    linear-gradient(45deg, transparent 30%, rgba(255, 200, 100, 0.4) 30%, rgba(255, 200, 100, 0.4) 70%, transparent 70%),
+    linear-gradient(-45deg, transparent 30%, rgba(255, 220, 150, 0.4) 30%, rgba(255, 220, 150, 0.4) 70%, transparent 70%),
+    linear-gradient(135deg, #ffffff 0%, #fffacd 25%, #ffdd99 100%);
+  border-color: #ffbb44;
+  box-shadow: 0 0 50px rgba(255, 245, 205, 0.9), 0 0 100px rgba(255, 220, 150, 0.6), inset 0 2px 12px rgba(255,255,255,0.7);
+}
+
+[data-token-skin-1="twilight"] .p4-cell.player1 {
+  background: 
+    radial-gradient(circle at 30% 30%, rgba(255, 150, 200, 0.7) 0%, transparent 30%),
+    linear-gradient(135deg, #5a2d82 0%, #2c1654 50%, #1a0d3a 100%);
+  box-shadow: 0 0 40px rgba(255, 107, 157, 0.8), 0 0 80px rgba(123, 104, 238, 0.6), 0 0 120px rgba(65, 105, 225, 0.3);
+  border-color: #9966ff;
+}
+[data-token-skin-2="twilight"] .p4-cell.player2 {
+  background: 
+    radial-gradient(circle at 30% 30%, rgba(255, 200, 220, 0.7) 0%, transparent 30%),
+    linear-gradient(135deg, #885588 0%, #664466 50%, #442244 100%);
+  box-shadow: 0 0 40px rgba(255, 170, 153, 0.8), 0 0 80px rgba(170, 153, 221, 0.6), 0 0 120px rgba(119, 153, 255, 0.3);
+  border-color: #bb88ff;
+}
+
+/* LEGENDARY SKINS */
+[data-token-skin-1="holo"] .p4-cell.player1 {
+  background: 
+    conic-gradient(from 0deg at 50% 50%, 
+      #ff6b9d 0deg, 
+      #7b68ee 60deg, 
+      #4169e1 120deg,
+      #00dd88 180deg,
+      #ff00ff 240deg,
+      #ff0066 300deg,
+      #ff6b9d 360deg
+    );
+  box-shadow: 0 0 50px rgba(255, 107, 157, 0.9), 0 0 100px rgba(123, 104, 238, 0.7), 0 0 150px rgba(0, 221, 136, 0.4);
+  border-color: #ff00ff;
+}
+[data-token-skin-2="holo"] .p4-cell.player2 {
+  background: 
+    conic-gradient(from 120deg at 50% 50%, 
+      #ffaa99 0deg, 
+      #aa99ff 60deg, 
+      #7799ff 120deg,
+      #55ff99 180deg,
+      #ff99ff 240deg,
+      #ff99aa 300deg,
+      #ffaa99 360deg
+    );
+  box-shadow: 0 0 50px rgba(255, 170, 153, 0.9), 0 0 100px rgba(170, 153, 255, 0.7), 0 0 150px rgba(85, 255, 153, 0.4);
+  border-color: #ff99ff;
+}
+
+[data-token-skin-1="lava"] .p4-cell.player1 {
+  background: 
+    radial-gradient(circle at 30% 50%, rgba(255, 255, 100, 0.8) 0%, transparent 40%),
+    radial-gradient(circle at 50% 30%, rgba(255, 150, 0, 0.7) 0%, transparent 30%),
+    radial-gradient(circle at 70% 70%, rgba(255, 0, 0, 0.6) 0%, transparent 35%),
+    linear-gradient(135deg, #ff3300 0%, #cc0000 50%, #660000 100%);
+  box-shadow: 0 0 50px rgba(255, 100, 0, 1), 0 0 100px rgba(255, 0, 0, 0.8), 0 0 150px rgba(255, 150, 0, 0.5);
+  border-color: #ff5500;
+}
+[data-token-skin-2="lava"] .p4-cell.player2 {
+  background: 
+    radial-gradient(circle at 30% 50%, rgba(255, 255, 150, 0.8) 0%, transparent 40%),
+    radial-gradient(circle at 50% 30%, rgba(255, 200, 50, 0.7) 0%, transparent 30%),
+    radial-gradient(circle at 70% 70%, rgba(255, 100, 0, 0.6) 0%, transparent 35%),
+    linear-gradient(135deg, #ff7700 0%, #ff3300 50%, #880000 100%);
+  box-shadow: 0 0 50px rgba(255, 200, 100, 1), 0 0 100px rgba(255, 150, 0, 0.8), 0 0 150px rgba(255, 200, 100, 0.5);
+  border-color: #ffaa00;
+}
+
+[data-token-skin-1="void"] .p4-cell.player1 {
+  background: 
+    radial-gradient(circle at 20% 20%, rgba(255, 100, 200, 0.4) 0%, transparent 25%),
+    radial-gradient(circle at 80% 80%, rgba(100, 50, 200, 0.3) 0%, transparent 30%),
+    radial-gradient(circle at 50% 50%, #111111 0%, #000000 100%);
+  box-shadow: 
+    0 0 50px rgba(255, 0, 150, 1),
+    0 0 100px rgba(200, 50, 255, 0.8),
+    0 0 150px rgba(100, 0, 200, 0.5),
+    inset 0 2px 10px rgba(255, 100, 200, 0.2);
+  border-color: #ff00ff;
+}
+[data-token-skin-2="void"] .p4-cell.player2 {
+  background: 
+    radial-gradient(circle at 20% 20%, rgba(255, 200, 100, 0.4) 0%, transparent 25%),
+    radial-gradient(circle at 80% 80%, rgba(150, 150, 200, 0.3) 0%, transparent 30%),
+    radial-gradient(circle at 50% 50%, #222222 0%, #111111 100%);
+  box-shadow: 
+    0 0 50px rgba(255, 200, 100, 1),
+    0 0 100px rgba(255, 150, 200, 0.8),
+    0 0 150px rgba(150, 100, 200, 0.5),
+    inset 0 2px 10px rgba(255, 200, 100, 0.2);
+  border-color: #ff99ff;
+}
+
+[data-token-skin-1="rainbow"] .p4-cell.player1 {
+  background: 
+    repeating-conic-gradient(from 0deg at 50% 50%, 
+      #ff0000 0deg 36deg,
+      #ffff00 36deg 72deg,
+      #00ff00 72deg 108deg,
+      #00ffff 108deg 144deg,
+      #0000ff 144deg 180deg,
+      #ff00ff 180deg 216deg,
+      #ff0000 216deg 252deg,
+      #ffff00 252deg 288deg,
+      #00ff00 288deg 324deg,
+      #00ffff 324deg 360deg
+    );
+  box-shadow: 0 0 60px rgba(255, 0, 0, 1), 0 0 120px rgba(255, 0, 255, 0.8), 0 0 180px rgba(0, 255, 255, 0.5);
+  border-color: #ffffff;
+}
+[data-token-skin-2="rainbow"] .p4-cell.player2 {
+  background: 
+    repeating-conic-gradient(from 60deg at 50% 50%, 
+      #ff6600 0deg 36deg,
+      #ffff00 36deg 72deg,
+      #00ff88 72deg 108deg,
+      #00ddff 108deg 144deg,
+      #6666ff 144deg 180deg,
+      #ff99ff 180deg 216deg,
+      #ff6600 216deg 252deg,
+      #ffff99 252deg 288deg,
+      #88ff88 288deg 324deg,
+      #88ffff 324deg 360deg
+    );
+  box-shadow: 0 0 60px rgba(255, 102, 0, 1), 0 0 120px rgba(255, 153, 255, 0.8), 0 0 180px rgba(136, 255, 255, 0.5);
+  border-color: #ffffff;
+}
+
+[data-token-skin-1="phoenix"] .p4-cell.player1 {
+  background: 
+    radial-gradient(circle at 30% 50%, rgba(255, 255, 0, 0.8) 0%, transparent 40%),
+    radial-gradient(circle at 50% 30%, rgba(255, 150, 0, 0.7) 0%, transparent 30%),
+    radial-gradient(circle at 70% 60%, rgba(255, 0, 0, 0.6) 0%, transparent 35%),
+    linear-gradient(135deg, #ff3300 0%, #ff0000 50%, #660000 100%);
+  box-shadow: 
+    0 0 50px rgba(255, 100, 0, 1),
+    0 0 100px rgba(255, 0, 0, 0.9),
+    0 0 150px rgba(255, 150, 0, 0.6),
+    0 0 200px rgba(255, 255, 0, 0.3);
+  border-color: #ffaa00;
+}
+[data-token-skin-2="phoenix"] .p4-cell.player2 {
+  background: 
+    radial-gradient(circle at 30% 50%, rgba(255, 255, 100, 0.8) 0%, transparent 40%),
+    radial-gradient(circle at 50% 30%, rgba(255, 200, 100, 0.7) 0%, transparent 30%),
+    radial-gradient(circle at 70% 60%, rgba(255, 150, 0, 0.6) 0%, transparent 35%),
+    linear-gradient(135deg, #ff9900 0%, #ff6600 50%, #884400 100%);
+  box-shadow: 
+    0 0 50px rgba(255, 200, 100, 1),
+    0 0 100px rgba(255, 150, 0, 0.9),
+    0 0 150px rgba(255, 200, 100, 0.6),
+    0 0 200px rgba(255, 255, 150, 0.3);
+  border-color: #ffdd00;
+}
+
+[data-token-skin-1="infinity"] .p4-cell.player1 {
+  background: 
+    conic-gradient(from 0deg,
+      #ff00ff,
+      #00ffff,
+      #00ff00,
+      #ffff00,
+      #ff0000,
+      #ff00ff
+    );
+  box-shadow: 
+    0 0 40px #ff00ff,
+    0 0 80px #00ffff,
+    0 0 120px #00ff00,
+    0 0 160px rgba(255, 0, 255, 0.5);
+  border-color: #ff00ff;
+  animation: none;
+}
+[data-token-skin-2="infinity"] .p4-cell.player2 {
+  background: 
+    conic-gradient(from 120deg,
+      #ff99ff,
+      #99ffff,
+      #99ff99,
+      #ffff99,
+      #ff9999,
+      #ff99ff
+    );
+  box-shadow: 
+    0 0 40px #ff99ff,
+    0 0 80px #99ffff,
+    0 0 120px #99ff99,
+    0 0 160px rgba(255, 153, 255, 0.5);
+  border-color: #ff99ff;
+}
+
+[data-token-skin-1="starlight"] .p4-cell.player1 {
+  background: 
+    radial-gradient(circle at 15% 15%, #ffffff 0%, #ffffff 3%, transparent 3%),
+    radial-gradient(circle at 85% 20%, #ffff88 0%, #ffff88 2.5%, transparent 2.5%),
+    radial-gradient(circle at 25% 75%, #88ddff 0%, #88ddff 2.8%, transparent 2.8%),
+    radial-gradient(circle at 70% 60%, #ff88ff 0%, #ff88ff 2.5%, transparent 2.5%),
+    radial-gradient(circle at 45% 35%, #ffffff 0%, #ffffff 2.2%, transparent 2.2%),
+    radial-gradient(circle at 80% 80%, #ffff88 0%, #ffff88 2%, transparent 2%),
+    linear-gradient(135deg, #001a4d 0%, #003d99 50%, #001a33 100%);
+  box-shadow: 
+    0 0 40px rgba(100, 150, 255, 0.8),
+    0 0 80px rgba(80, 150, 255, 0.6),
+    0 0 120px rgba(100, 200, 255, 0.3),
+    inset 0 2px 10px rgba(150, 200, 255, 0.2);
+  border-color: #4488ff;
+}
+[data-token-skin-2="starlight"] .p4-cell.player2 {
+  background: 
+    radial-gradient(circle at 15% 15%, #ffffff 0%, #ffffff 3%, transparent 3%),
+    radial-gradient(circle at 85% 20%, #ffff88 0%, #ffff88 2.5%, transparent 2.5%),
+    radial-gradient(circle at 25% 75%, #88ff88 0%, #88ff88 2.8%, transparent 2.8%),
+    radial-gradient(circle at 70% 60%, #ff88ff 0%, #ff88ff 2.5%, transparent 2.5%),
+    radial-gradient(circle at 45% 35%, #ffffff 0%, #ffffff 2.2%, transparent 2.2%),
+    radial-gradient(circle at 80% 80%, #ffff88 0%, #ffff88 2%, transparent 2%),
+    linear-gradient(135deg, #1a3a00 0%, #3d9900 50%, #1a3300 100%);
+  box-shadow: 
+    0 0 40px rgba(100, 200, 100, 0.8),
+    0 0 80px rgba(100, 200, 100, 0.6),
+    0 0 120px rgba(100, 255, 100, 0.3),
+    inset 0 2px 10px rgba(150, 255, 150, 0.2);
+  border-color: #66ff66;
 }
 
 .p4-cell.empty:hover {

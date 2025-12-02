@@ -43,6 +43,55 @@
     { name: "Ultra", css: "'Ultra', serif", rarity: "legendary" }
 ];
 
+      // token skins pool (obtenables via gacha)
+      const SKINS = [
+        // --- COMMON ---
+        { name: "Classic", id: "classic", rarity: "common" },
+        { name: "Wood", id: "wood", rarity: "common" },
+        { name: "Stone", id: "stone", rarity: "common" },
+        { name: "Clay", id: "clay", rarity: "common" },
+        { name: "Plastic", id: "plastic", rarity: "common" },
+        
+        // --- UNCOMMON ---
+        { name: "Camo", id: "camo", rarity: "uncommon" },
+        { name: "Pixel", id: "pixel", rarity: "uncommon" },
+        { name: "Marble", id: "marble", rarity: "uncommon" },
+        { name: "Retro", id: "retro", rarity: "uncommon" },
+        { name: "Glass", id: "glass", rarity: "uncommon" },
+        { name: "Rust", id: "rust", rarity: "uncommon" },
+        { name: "Ocean", id: "ocean", rarity: "uncommon" },
+        { name: "Fire", id: "fire", rarity: "uncommon" },
+        
+        // --- RARE ---
+        { name: "Metal", id: "metal", rarity: "rare" },
+        { name: "Gold", id: "gold", rarity: "rare" },
+        { name: "Chrome", id: "chrome", rarity: "rare" },
+        { name: "Ice", id: "ice", rarity: "rare" },
+        { name: "Silver", id: "silver", rarity: "rare" },
+        { name: "Copper", id: "copper", rarity: "rare" },
+        { name: "Emerald", id: "emerald", rarity: "rare" },
+        { name: "Ruby", id: "ruby", rarity: "rare" },
+        { name: "Sapphire", id: "sapphire", rarity: "rare" },
+        
+        // --- EPIC ---
+        { name: "Neon", id: "neon", rarity: "epic" },
+        { name: "Galaxy", id: "galaxy", rarity: "epic" },
+        { name: "Cosmic", id: "cosmic", rarity: "epic" },
+        { name: "Aurora", id: "aurora", rarity: "epic" },
+        { name: "Thunder", id: "thunder", rarity: "epic" },
+        { name: "Diamond", id: "diamond", rarity: "epic" },
+        { name: "Twilight", id: "twilight", rarity: "epic" },
+        
+        // --- LEGENDARY ---
+        { name: "Holo", id: "holo", rarity: "legendary" },
+        { name: "Lava", id: "lava", rarity: "legendary" },
+        { name: "Void", id: "void", rarity: "legendary" },
+        { name: "Rainbow", id: "rainbow", rarity: "legendary" },
+        { name: "Phoenix", id: "phoenix", rarity: "legendary" },
+        { name: "Infinity", id: "infinity", rarity: "legendary" },
+        { name: "Starlight", id: "starlight", rarity: "legendary" }
+      ];
+
   const PULL_COST = 20;
   const INIT_MONEY = 50;
 
@@ -63,6 +112,9 @@
     if (!localStorage.getItem('font1')) localStorage.setItem('font1', 'default');
     if (!localStorage.getItem('font2')) localStorage.setItem('font2', 'default');
   }
+
+  // Expose ensureStorage to global so other scripts can call it
+  window.ensureStorage = ensureStorage;
 
   /* ---------- money API ---------- */
   window.addMoney = function(player, amount){
@@ -91,12 +143,19 @@
   function saveInv(player, arr){
     localStorage.setItem('inv' + player, JSON.stringify(arr || []));
   }
-  function hasFont(player, css){
+  function hasItem(player, item){
     const inv = getInv(player);
-    return inv.some(i => i.css === css);
+    if (!item || !inv) return false;
+    if (item.type === 'font') return inv.some(i => i.type === 'font' && i.css === item.css);
+    if (item.type === 'skin') return inv.some(i => i.type === 'skin' && i.id === item.id);
+    // fallback: try to match by name
+    return inv.some(i => i.name === item.name);
   }
   function addToInv(player, item){
-    if (hasFont(player, item.css)) return false; // already have it
+    if (!item) return false;
+    // ensure item.type exists
+    if (!item.type) item.type = item.css ? 'font' : (item.id ? 'skin' : 'font');
+    if (hasItem(player, item)) return false; // already have it
     const inv = getInv(player);
     inv.push(item);
     saveInv(player, inv);
@@ -128,6 +187,19 @@
       return;
     }
     equipFontInternal(player, cssOrIndex);
+  };
+
+  // Equip a token skin for Puissance4
+  window.equipSkin = function(player, skinId){
+    if (!skinId) return;
+    localStorage.setItem('p4-token-skin-' + player, skinId);
+    // Apply skin to body if on Puissance4 page
+    try { 
+      const equippedSkin = localStorage.getItem('p4-token-skin-' + player) || 'classic';
+      document.body.setAttribute('data-token-skin-' + player, equippedSkin);
+    } catch(e) {}
+    // refresh quick-inv displays if present
+    refreshInPageQuickInv(player);
   };
 
   window.applyFonts = function(){
@@ -180,17 +252,32 @@
     // retirer l'argent
     addMoney(player, -PULL_COST);
 
-    const pick = FONTS[Math.floor(Math.random()*FONTS.length)];
-    const item = { name: pick.name, css: pick.css, rarity: pick.rarity, id: Date.now() };
+    // Choix aléatoire: majoritairement fonts, parfois skins (respect des raretés via pool séparée)
+    let item;
+    if (Math.random() < 0.65) {
+      const pick = FONTS[Math.floor(Math.random()*FONTS.length)];
+      item = { type: 'font', name: pick.name, css: pick.css, rarity: pick.rarity, id: Date.now() };
+    } else {
+      const pick = SKINS[Math.floor(Math.random()*SKINS.length)];
+      item = { type: 'skin', name: pick.name, id: pick.id, rarity: pick.rarity };
+    }
 
     const added = addToInv(player, item);
 
     if (!added) {
+      // Already have this item — show type-aware message
+      const itemType = item.type === 'font' ? '📝 Ecriture' : '🎨 Jeton';
+      const preview = item.type === 'font' ?
+        `<div style="font-family:${item.css};font-weight:700;font-size:18px">${item.name}</div>` :
+        `<div style="font-weight:700;font-size:18px">${item.name}</div>`;
       showPopup('Gacha — résultat', `<div style="text-align:center">
-        <div style="font-size:20px;margin-bottom:8px">Tu as obtenu :</div>
-        <div style="font-family:${item.css};font-weight:700">${item.name}</div>
+        <div style="font-size:20px;margin-bottom:12px">Tu as obtenu :</div>
+        <div style="padding:8px;border-radius:8px;background:rgba(255,255,255,0.05);margin-bottom:8px;">
+          ${preview}
+          <div style="margin-top:6px;font-size:12px;color:var(--accent);">${itemType}</div>
+        </div>
         <div style="margin-top:8px;color:var(--muted)">Rareté : ${item.rarity}</div>
-        <div style="margin-top:10px;color:orange">Déjà possédée — l'objet n'a pas été dupliqué.</div>
+        <div style="margin-top:10px;color:orange">⚠️ Déjà possédée — l'objet n'a pas été dupliqué.</div>
       </div>`);
       refreshInPageQuickInv(player);
       const moneyEl = document.getElementById(player===1? 'money-left' : 'money-right');
@@ -204,13 +291,21 @@
     }
 
     // affiche le résultat (sans ajouter un deuxième "Fermer" — on laisse le popup global gérer la fermeture)
+    const itemType = item.type === 'font' ? '📝 Ecriture' : '🎨 Jeton';
+    const previewHtml = item.type === 'font' ?
+      `<div style="font-family:${item.css};font-weight:700;font-size:18px">${item.name}</div>` :
+      `<div style="font-weight:700;font-size:18px">${item.name}</div>`;
+
     const body = `
       <div style="text-align:center">
-        <div style="font-size:20px;margin-bottom:8px">🎉 Tu as obtenu :</div>
-        <div style="font-family:${item.css};font-weight:700">${item.name}</div>
-        <div style="margin-top:8px;color:var(--muted)">Rareté : ${item.rarity}</div>
-        <div style="margin-top:10px">
-          <button class="btn small" id="equip-now">Équiper maintenant</button>
+        <div style="font-size:20px;margin-bottom:12px">🎉 Tu as obtenu :</div>
+        <div style="padding:10px;border-radius:8px;background:rgba(255,255,255,0.05);margin-bottom:8px;">
+          ${previewHtml}
+          <div style="margin-top:8px;font-size:13px;color:var(--accent);">${itemType}</div>
+        </div>
+        <div style="margin-top:8px;color:var(--muted)">Rareté : <strong>${item.rarity}</strong></div>
+        <div style="margin-top:12px">
+          <button class="btn small" id="equip-now" style="background:var(--accent);color:var(--dark);">✓ Équiper maintenant</button>
         </div>
       </div>
     `;
@@ -220,7 +315,15 @@
     const equipNow = document.getElementById('equip-now');
     if (equipNow) {
       equipNow.addEventListener('click', ()=>{
-        equipFont(player, item.css);
+        if (item.type === 'font') {
+          equipFont(player, item.css);
+        } else if (item.type === 'skin') {
+          if (typeof window.equipSkin === 'function') window.equipSkin(player, item.id);
+          else {
+            localStorage.setItem('p4-token-skin-' + player, item.id);
+            try { document.body.setAttribute('data-token-skin-' + player, item.id); } catch(e){}
+          }
+        }
         // indicate equipped in popup
         const b = document.getElementById('popup-body');
         if (b) b.innerHTML += `<div style="margin-top:8px;color:lightgreen">Équipé ✅</div>`;
@@ -247,27 +350,71 @@ window.openInventory = function(player){
     return;
   }
 
-  // récupère la font actuellement équipée pour ce joueur
+  // récupère la font et le skin actuellement équipés pour ce joueur
   const equippedCss = localStorage.getItem('font' + player) || 'default';
+  const equippedSkin = localStorage.getItem('p4-token-skin-' + player) || 'classic';
 
-  // construit le html : on ajoute un badge "Équipé" et un container pour mettre à jour dynamiquement
-  let html = `<div style="display:flex;flex-direction:column;gap:10px;align-items:stretch;max-width:420px">`;
-  inv.forEach((f, idx)=>{
+  // séparer fonts et skins
+  const fonts = inv.filter(f => f.type === 'font');
+  const skins = inv.filter(f => f.type === 'skin');
+
+  // construit le html avec tabs : Fonts et Skins
+  let html = `
+    <div style="display:flex;gap:8px;margin-bottom:12px;border-bottom:2px solid rgba(255,255,255,0.1);">
+      <button class="tab-btn active" data-tab="fonts" style="flex:1;padding:8px;border:none;background:transparent;color:var(--accent);cursor:pointer;border-bottom:2px solid var(--accent);font-weight:700;">
+        📝 Ecriture (${fonts.length})
+      </button>
+      <button class="tab-btn" data-tab="skins" style="flex:1;padding:8px;border:none;background:transparent;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;font-weight:700;">
+        🎨 Jeton (${skins.length})
+      </button>
+    </div>
+
+    <div id="fonts-container" class="tab-content" style="display:block;flex-direction:column;gap:10px;max-width:420px;">
+  `;
+  
+  // Afficher les fonts
+  fonts.forEach((f, idx)=>{
+    const itemIdx = inv.indexOf(f);
     const isEquipped = (f.css === equippedCss);
     html += `
-      <div class="inv-row" data-idx="${idx}" data-player="${player}" 
-           style="display:flex;justify-content:space-between;align-items:center;padding:8px;border-radius:8px;">
-        <div style="display:flex;gap:8px;align-items:center">
+      <div class="inv-row" data-idx="${itemIdx}" data-player="${player}" 
+           style="display:flex;justify-content:space-between;align-items:center;padding:8px;border-radius:8px;background:rgba(255,255,255,0.02);">
+        <div style="display:flex;gap:8px;align-items:center;flex:1">
           <div style="min-width:140px;font-weight:700;font-family:${f.css}">${f.name}</div>
-          <div style="color:var(--muted);font-size:12px">${f.rarity || ''}</div>
+          <div style="color:var(--muted);font-size:11px;padding:2px 6px;background:rgba(255,255,255,0.1);border-radius:4px;">${f.rarity || 'unknown'}</div>
         </div>
-        <div style="display:flex;gap:8px;align-items:center">
-          <button class="btn small equip-btn" data-idx="${idx}" data-player="${player}">Équiper</button>
-          <div class="equipped-badge" style="font-weight:700;color:lightgreen;display:${isEquipped ? 'block' : 'none'}">Équipé</div>
+        <div style="display:flex;gap:6px;align-items:center;">
+          <button class="btn small equip-btn" data-idx="${itemIdx}" data-player="${player}" style="padding:6px 10px;font-size:12px;">Équiper</button>
+          <div class="equipped-badge" style="font-weight:700;color:lightgreen;font-size:12px;display:${isEquipped ? 'block' : 'none'};">✓</div>
         </div>
       </div>
     `;
   });
+
+  html += `</div>
+
+    <div id="skins-container" class="tab-content" style="display:none;flex-direction:column;gap:10px;max-width:420px;">
+  `;
+
+  // Afficher les skins
+  skins.forEach((s, idx)=>{
+    const itemIdx = inv.indexOf(s);
+    const isEquipped = (s.id === equippedSkin);
+    html += `
+      <div class="inv-row" data-idx="${itemIdx}" data-player="${player}" 
+           style="display:flex;justify-content:space-between;align-items:center;padding:8px;border-radius:8px;background:rgba(255,255,255,0.02);">
+        <div style="display:flex;gap:8px;align-items:center;flex:1">
+          <div style="min-width:140px;font-weight:700;">${s.name}</div>
+          <div style="color:var(--muted);font-size:11px;padding:2px 6px;background:rgba(255,255,255,0.1);border-radius:4px;">${s.rarity || 'unknown'}</div>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center;">
+          <button class="btn small equip-btn" data-idx="${itemIdx}" data-player="${player}" style="padding:6px 10px;font-size:12px;">Équiper</button>
+          <div class="equipped-badge" style="font-weight:700;color:lightgreen;font-size:12px;display:${isEquipped ? 'block' : 'none'};">✓</div>
+        </div>
+      </div>
+    `;
+  });
+
   html += `</div>`;
 
   // affiche la popup (ne contient pas de bouton fermer supplémentaire)
@@ -277,16 +424,52 @@ window.openInventory = function(player){
   const popupBody = document.getElementById('popup-body');
   if (!popupBody) return;
 
+  // Gestion des onglets (tabs)
+  const tabBtns = popupBody.querySelectorAll('button.tab-btn');
+  const fontsContainer = popupBody.querySelector('#fonts-container');
+  const skinsContainer = popupBody.querySelector('#skins-container');
+
+  tabBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const targetTab = btn.getAttribute('data-tab');
+      // mettre à jour l'affichage des onglets
+      tabBtns.forEach(b => {
+        b.classList.remove('active');
+        b.style.color = 'var(--muted)';
+        b.style.borderBottomColor = 'transparent';
+      });
+      btn.classList.add('active');
+      btn.style.color = 'var(--accent)';
+      btn.style.borderBottomColor = 'var(--accent)';
+
+      // afficher/masquer les containers
+      if (targetTab === 'fonts') {
+        if (fontsContainer) fontsContainer.style.display = 'flex';
+        if (skinsContainer) skinsContainer.style.display = 'none';
+      } else if (targetTab === 'skins') {
+        if (fontsContainer) fontsContainer.style.display = 'none';
+        if (skinsContainer) skinsContainer.style.display = 'flex';
+      }
+    });
+  });
+
   // fonction utilitaire pour rafraîchir les badges "Équipé" dans la popup
-  function refreshPopupBadges(newCss){
+  function refreshPopupBadges(equippedValue, isSkin){
     const rows = popupBody.querySelectorAll('.inv-row');
     rows.forEach(row=>{
       const idx = Number(row.getAttribute('data-idx'));
-      const f = inv[idx];
+      const item = inv[idx];
       const badge = row.querySelector('.equipped-badge');
       if (!badge) return;
-      if (f && f.css === newCss) badge.style.display = 'block';
-      else badge.style.display = 'none';
+      if (!item) { badge.style.display = 'none'; return; }
+      
+      if (item.type === 'font' && !isSkin) {
+        badge.style.display = (item.css === equippedValue) ? 'block' : 'none';
+      } else if (item.type === 'skin' && isSkin) {
+        badge.style.display = (item.id === equippedValue) ? 'block' : 'none';
+      } else {
+        badge.style.display = 'none';
+      }
     });
   }
 
@@ -298,21 +481,33 @@ window.openInventory = function(player){
       const pl = Number(btn.getAttribute('data-player'));
       const item = inv[idx];
       if (!item) return;
-      // équipe la font (utilise la fonction globale existante)
-      equipFont(pl, idx); // equip by index
-      // affiche confirmation dans la popup (sans fermer)
+      
+      // équipe selon le type
+      if (item.type === 'font') {
+        equipFont(pl, idx); // equip by index
+        // rafraîchir seulement les badges de fonts
+        refreshPopupBadges(item.css, false);
+      } else if (item.type === 'skin') {
+        if (typeof window.equipSkin === 'function') window.equipSkin(pl, item.id);
+        else { 
+          localStorage.setItem('p4-token-skin', item.id); 
+          try{ document.body.setAttribute('data-token-skin', item.id);}catch(e){}
+        }
+        // rafraîchir seulement les badges de skins
+        refreshPopupBadges(item.id, true);
+      }
+
+      // affiche confirmation brève dans la popup (sans fermer)
       const confirmMsg = document.createElement('div');
       confirmMsg.style.marginTop = '8px';
       confirmMsg.style.color = 'lightgreen';
-      confirmMsg.textContent = `Font "${item.name}" équipée ✅`;
+      confirmMsg.style.fontSize = '12px';
+      confirmMsg.textContent = `✓ ${item.name} équipée`;
       // supprimer d'éventuels vieux messages de confirmation
       const old = popupBody.querySelector('.equip-confirm');
       if (old) old.remove();
       confirmMsg.className = 'equip-confirm';
       popupBody.appendChild(confirmMsg);
-
-      // rafraîchir badges pour indiquer l'item équipé
-      refreshPopupBadges(item.css);
 
       // rafraîchir l'affichage en page (inputs noms, quick-inv, etc.)
       if (typeof window.applyFonts === 'function') window.applyFonts();
@@ -332,9 +527,16 @@ window.openInventory = function(player){
     inv.slice(-6).reverse().forEach((f, idx)=>{
       const b = document.createElement('button');
       b.className = 'btn small';
-      b.style.fontFamily = f.css || 'inherit';
-      b.textContent = f.name || 'Font';
-      b.addEventListener('click', ()=> { equipFont(player, f.css); alert('Font équipée !'); });
+      if (f.type === 'font') {
+        b.style.fontFamily = f.css || 'inherit';
+        b.textContent = f.name || 'Font';
+        b.addEventListener('click', ()=> { equipFont(player, f.css); alert('Font équipée !'); });
+      } else if (f.type === 'skin') {
+        b.textContent = f.name || 'Skin';
+        b.addEventListener('click', ()=> { equipSkin(player, f.id); alert('Skin équipé !'); });
+      } else {
+        b.textContent = f.name || 'Item';
+      }
       quickInvEl.appendChild(b);
     });
   }
@@ -377,15 +579,28 @@ window.openInventory = function(player){
         addMoney(player, -PULL_COST);
         refreshMoneyOnPage(player, moneyEl);
 
-        const pick = FONTS[Math.floor(Math.random()*FONTS.length)];
-        const item = { name: pick.name, css: pick.css, rarity: pick.rarity, id: Date.now() };
+        let item;
+        if (Math.random() < 0.65) {
+          const pick = FONTS[Math.floor(Math.random()*FONTS.length)];
+          item = { type: 'font', name: pick.name, css: pick.css, rarity: pick.rarity, id: Date.now() };
+        } else {
+          const pick = SKINS[Math.floor(Math.random()*SKINS.length)];
+          item = { type: 'skin', name: pick.name, id: pick.id, rarity: pick.rarity };
+        }
         const added = addToInv(player, item);
 
         if (!added) {
+          const itemType = item.type === 'font' ? '📝 Ecriture' : '🎨 Jeton';
+          const preview = item.type === 'font' ?
+            `<div style="font-family:${item.css};font-weight:700;font-size:16px">${item.name}</div>` :
+            `<div style="font-weight:700;font-size:16px">${item.name}</div>`;
           resultContent.innerHTML = `<div style="text-align:center">
-            <div style="font-size:18px;margin-bottom:6px">Tu as obtenu :</div>
-            <div style="font-family:${item.css};font-weight:700">${item.name}</div>
-            <div style="margin-top:6px;color:orange">Déjà possédée — l'objet n'a pas été dupliqué.</div>
+            <div style="font-size:18px;margin-bottom:8px">Tu as obtenu :</div>
+            <div style="padding:8px;border-radius:8px;background:rgba(255,255,255,0.05);margin-bottom:8px;">
+              ${preview}
+              <div style="margin-top:6px;font-size:12px;color:var(--accent);">${itemType}</div>
+            </div>
+            <div style="color:orange">⚠️ Déjà possédée — l'objet n'a pas été dupliqué.</div>
           </div>`;
           refreshQuickInvOnPage(player, quickInv);
           return;
@@ -393,17 +608,28 @@ window.openInventory = function(player){
 
         refreshQuickInvOnPage(player, quickInv);
 
+        const itemTypeLabel = item.type === 'font' ? '📝 Ecriture' : '🎨 Jeton';
+        const previewContent = item.type === 'font' ?
+          `<div style="font-family:${item.css};font-weight:700;font-size:18px">${item.name}</div>` :
+          `<div style="font-weight:700;font-size:18px">${item.name}</div>`;
         resultContent.innerHTML = `
           <div style="text-align:center">
-            <div style="font-size:22px;margin-bottom:8px">🎉 Tu as obtenu :</div>
-            <div style="font-family:${item.css};font-weight:700">${item.name}</div>
-            <div style="margin-top:8px;color:var(--muted)">Rareté : ${item.rarity}</div>
-            <div style="margin-top:10px"><button class="btn small" id="equip-now-standalone">Équiper maintenant</button></div>
+            <div style="font-size:22px;margin-bottom:12px">🎉 Tu as obtenu :</div>
+            <div style="padding:10px;border-radius:8px;background:rgba(255,255,255,0.05);margin-bottom:8px;">
+              ${previewContent}
+              <div style="margin-top:8px;font-size:13px;color:var(--accent);">${itemTypeLabel}</div>
+            </div>
+            <div style="margin-top:8px;color:var(--muted)">Rareté : <strong>${item.rarity}</strong></div>
+            <div style="margin-top:12px"><button class="btn small" id="equip-now-standalone" style="background:var(--accent);color:var(--dark);">✓ Équiper</button></div>
           </div>
         `;
         const eq = document.getElementById('equip-now-standalone');
         if (eq) eq.addEventListener('click', ()=>{
-          equipFont(player, item.css);
+          if (item.type === 'font') equipFont(player, item.css);
+          else if (item.type === 'skin') {
+            if (typeof window.equipSkin === 'function') window.equipSkin(player, item.id);
+            else { localStorage.setItem('p4-token-skin-' + player, item.id); try{ document.body.setAttribute('data-token-skin-' + player, item.id);}catch(e){} }
+          }
           resultContent.innerHTML += `<div style="margin-top:8px;color:lightgreen">Équipé ✅</div>`;
         });
       });
@@ -444,15 +670,21 @@ window.openInventory = function(player){
 
         const name = document.createElement('div');
         name.textContent = f.name;
-        name.style.fontFamily = f.css;
+        if (f.type === 'font' && f.css) name.style.fontFamily = f.css;
         name.style.fontWeight = '700';
 
         const equip = document.createElement('button');
         equip.className = 'btn small';
         equip.textContent = 'Équiper';
         equip.addEventListener('click', ()=>{
-          equipFont(player, idx); // equip by index
-          alert('Font équipée !');
+          if (f.type === 'font') {
+            equipFont(player, idx); // equip by index
+            alert('Font équipée !');
+          } else if (f.type === 'skin') {
+            if (typeof window.equipSkin === 'function') window.equipSkin(player, f.id);
+            else { localStorage.setItem('p4-token-skin-' + player, f.id); try{ document.body.setAttribute('data-token-skin-' + player, f.id);}catch(e){} }
+            alert('Skin équipé !');
+          }
           renderInv();
         });
 
@@ -486,9 +718,16 @@ window.openInventory = function(player){
     inv.slice(-6).reverse().forEach((f, idx)=>{
       const b = document.createElement('button');
       b.className = 'btn small';
-      b.style.fontFamily = f.css || 'inherit';
-      b.textContent = f.name || 'Font';
-      b.addEventListener('click', ()=> { equipFont(player, f.css); alert('Font équipée !'); });
+      if (f.type === 'font') {
+        b.style.fontFamily = f.css || 'inherit';
+        b.textContent = f.name || 'Font';
+        b.addEventListener('click', ()=> { equipFont(player, f.css); alert('Font équipée !'); });
+      } else if (f.type === 'skin') {
+        b.textContent = f.name || 'Skin';
+        b.addEventListener('click', ()=> { equipSkin(player, f.id); alert('Skin équipé !'); });
+      } else {
+        b.textContent = f.name || 'Item';
+      }
       quickInvEl.appendChild(b);
     });
   }

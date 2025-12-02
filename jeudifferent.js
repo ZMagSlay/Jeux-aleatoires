@@ -22,7 +22,86 @@ class Puissance4 {
     this.setupEventListeners();
     this.renderBoard();
     this.loadStats();
+    this.loadPlayerSettings();
     this.updateUI();
+    this.applyFonts();
+    this.loadMoneyUI();
+    // Apply token skins for both players (each player has their own skin)
+    try {
+      const skin1 = localStorage.getItem('p4-token-skin-1');
+      const skin2 = localStorage.getItem('p4-token-skin-2');
+      if (skin1) document.body.setAttribute('data-token-skin-1', skin1);
+      if (skin2) document.body.setAttribute('data-token-skin-2', skin2);
+    } catch (e) {}
+  }
+
+  // Charger les noms et couleurs sauvegardés depuis localStorage
+  loadPlayerSettings() {
+    const leftNameInput = document.getElementById('left-name-input');
+    const rightNameInput = document.getElementById('right-name-input');
+    const leftColor = document.getElementById('left-color');
+    const rightColor = document.getElementById('right-color');
+
+    // Charger noms — utiliser les clés partagées `name-left`/`name-right` si présentes
+    const sharedNameLeft = localStorage.getItem('name-left');
+    const sharedNameRight = localStorage.getItem('name-right');
+    const savedName1 = localStorage.getItem('player1-name-p4');
+    const savedName2 = localStorage.getItem('player2-name-p4');
+
+    // Priorité aux clés globales (utilisées par `jeu.html`)
+    if (sharedNameLeft) {
+      this.playerNames[1] = sharedNameLeft;
+      if (leftNameInput) leftNameInput.value = sharedNameLeft;
+    } else if (savedName1) {
+      this.playerNames[1] = savedName1;
+      if (leftNameInput) leftNameInput.value = savedName1;
+    }
+
+    if (sharedNameRight) {
+      this.playerNames[2] = sharedNameRight;
+      if (rightNameInput) rightNameInput.value = sharedNameRight;
+    } else if (savedName2) {
+      this.playerNames[2] = savedName2;
+      if (rightNameInput) rightNameInput.value = savedName2;
+    }
+
+    // Charger couleurs
+    const savedColor1 = localStorage.getItem('color-left');
+    const savedColor2 = localStorage.getItem('color-right');
+
+    if (savedColor1 && leftColor) leftColor.value = savedColor1;
+    if (savedColor2 && rightColor) rightColor.value = savedColor2;
+  }
+
+  // Appliquer les fonts équipées
+  applyFonts() {
+    const f1 = localStorage.getItem('font1');
+    const f2 = localStorage.getItem('font2');
+    const leftNameInput = document.getElementById('left-name-input');
+    const rightNameInput = document.getElementById('right-name-input');
+    const currentPlayerName = document.getElementById('currentPlayerName');
+
+    if (leftNameInput) {
+      leftNameInput.style.fontFamily = (f1 && f1 !== 'default') ? f1 : '';
+    }
+    if (rightNameInput) {
+      rightNameInput.style.fontFamily = (f2 && f2 !== 'default') ? f2 : '';
+    }
+    if (currentPlayerName) {
+      const currentFont = this.currentPlayer === 1 ? f1 : f2;
+      currentPlayerName.style.fontFamily = (currentFont && currentFont !== 'default') ? currentFont : '';
+    }
+  }
+
+  // Charger et afficher l'argent des joueurs
+  loadMoneyUI() {
+    const leftMoney = getMoney(1);
+    const rightMoney = getMoney(2);
+    const moneyLeft = document.getElementById('money-left');
+    const moneyRight = document.getElementById('money-right');
+
+    if (moneyLeft) moneyLeft.textContent = '💰 ' + leftMoney;
+    if (moneyRight) moneyRight.textContent = '💰 ' + rightMoney;
   }
 
   initializeBoard() {
@@ -32,12 +111,70 @@ class Puissance4 {
   }
 
   setupEventListeners() {
-    document.getElementById('newGameBtn').addEventListener('click', () => this.newGame());
-    document.getElementById('resetScoreBtn').addEventListener('click', () => this.resetScore());
+    const newBtn = document.getElementById('newGameBtn');
+    if (newBtn) newBtn.addEventListener('click', () => this.newGame());
+    const resetBtn = document.getElementById('resetScoreBtn');
+    if (resetBtn) resetBtn.addEventListener('click', () => this.resetScore());
+
+    // Event listeners pour les noms
+    const leftNameInput = document.getElementById('left-name-input');
+    const rightNameInput = document.getElementById('right-name-input');
+
+    if (leftNameInput) {
+      leftNameInput.addEventListener('change', (e) => {
+        const name = e.target.value || 'Joueur 1';
+        this.playerNames[1] = name;
+        // Sauvegarder à la fois la clé P4-specific et la clé partagée pour autres pages
+        localStorage.setItem('player1-name-p4', name);
+        localStorage.setItem('name-left', name);
+        this.updateUI();
+      });
+    }
+
+    if (rightNameInput) {
+      rightNameInput.addEventListener('change', (e) => {
+        const name = e.target.value || 'Joueur 2';
+        this.playerNames[2] = name;
+        // Sauvegarder à la fois la clé P4-specific et la clé partagée for other pages
+        localStorage.setItem('player2-name-p4', name);
+        localStorage.setItem('name-right', name);
+        this.updateUI();
+      });
+    }
+
+    // Event listeners pour les couleurs
+    const leftColor = document.getElementById('left-color');
+    const rightColor = document.getElementById('right-color');
+
+    if (leftColor) {
+      leftColor.addEventListener('change', (e) => {
+        localStorage.setItem('color-left', e.target.value);
+        this.applyColors();
+      });
+    }
+
+    if (rightColor) {
+      rightColor.addEventListener('change', (e) => {
+        localStorage.setItem('color-right', e.target.value);
+        this.applyColors();
+      });
+    }
+  }
+
+  // Appliquer les couleurs aux inputs
+  applyColors() {
+    const c1 = localStorage.getItem('color-left');
+    const c2 = localStorage.getItem('color-right');
+    const leftInput = document.getElementById('left-name-input');
+    const rightInput = document.getElementById('right-name-input');
+
+    if (leftInput && c1) leftInput.style.color = c1;
+    if (rightInput && c2) rightInput.style.color = c2;
   }
 
   renderBoard() {
     const boardElement = document.getElementById('board');
+    if (!boardElement) return;
     boardElement.innerHTML = '';
 
     for (let col = 0; col < this.COLS; col++) {
@@ -95,7 +232,7 @@ class Puissance4 {
           cell.style.setProperty('--player-border', playerBorder);
         }
         
-        // Retirer la classe dropping après l'animation
+        // Retirer la classe dropping après l'animation (700ms = durée de dropToken)
         setTimeout(() => {
           cell.classList.remove('dropping');
         }, 700);
@@ -130,12 +267,15 @@ class Puissance4 {
             this.stats.player2Wins++;
           }
           this.saveStats();
+
+          // Donner 15💰 au gagnant
+          addMoney(this.currentPlayer, 15);
           
           // Show winner message with delay for dramatic effect
           setTimeout(() => {
             this.updateUI();
             document.getElementById('gameMessage').textContent = 
-              `🎉 ${this.playerNames[this.currentPlayer]} a gagné! 🎉`;
+              `🎉 ${this.playerNames[this.currentPlayer]} a gagné! 🎉 +15💰`;
             document.getElementById('gameMessage').classList.add('win');
             
             // Trigger confetti-like effect on the board
@@ -318,12 +458,17 @@ class Puissance4 {
 
   updateUI() {
     document.getElementById('currentPlayerName').textContent = this.playerNames[this.currentPlayer];
-    document.getElementById('player1Name').textContent = this.playerNames[1];
-    document.getElementById('player2Name').textContent = this.playerNames[2];
     document.getElementById('player1Score').textContent = this.stats.player1Wins;
     document.getElementById('player2Score').textContent = this.stats.player2Wins;
     document.getElementById('gamesPlayed').textContent = this.stats.gamesPlayed;
     document.getElementById('draws').textContent = this.stats.draws;
+    
+    // Mettre à jour l'affichage de l'argent
+    this.loadMoneyUI();
+    
+    // Appliquer les fonts après les mises à jour
+    this.applyFonts();
+    this.applyColors();
   }
 
   saveStats() {
@@ -581,5 +726,9 @@ class Puissance4 {
 
 // Initialize game when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
+  // Initialiser le système de gacha/argent
+  ensureStorage();
+  
+  // Créer et démarrer le jeu Puissance 4
   new Puissance4();
 });

@@ -13,6 +13,21 @@
     <h1 style="margin: 0; flex: 1; text-align: center; font-size: 24px;">Puissance 4</h1>
   </div>
 
+  <!-- En-têtes joueurs — argent + boutons gacha/inventaire -->
+  <div style="display:flex;gap:12px;align-items:center;justify-content:space-between;padding:8px 18px;">
+    <div style="display:flex;gap:8px;align-items:center">
+      <span class="money" id="money-left">💰 0</span>
+      <button class="btn small" onclick="openGacha(1)">🎰 Gacha</button>
+      <button class="btn small" onclick="openInventory(1)">📦 Inventaire</button>
+    </div>
+
+    <div style="display:flex;gap:8px;align-items:center">
+      <span class="money" id="money-right">💰 0</span>
+      <button class="btn small" onclick="openGacha(2)">🎰 Gacha</button>
+      <button class="btn small" onclick="openInventory(2)">📦 Inventaire</button>
+    </div>
+  </div>
+
   <div class="game-container-p4">
     <div class="p4-info">
       <div class="p4-player-info">
@@ -23,18 +38,23 @@
         <div class="p4-score-board">
           <div class="p4-player-score">
             <span class="p4-color-indicator player1"></span>
-            <span id="player1Name">Joueur 1</span>: <span id="player1Score">0</span>
+            <input type="color" id="left-color" class="color-input" style="width:24px;height:24px;border:none;cursor:pointer;">
+            <input id="left-name-input" class="name-input-p4" placeholder="Joueur 1" style="flex:1;min-width:80px;">
+            <span id="player1Score">0</span>
           </div>
           <div class="p4-player-score">
             <span class="p4-color-indicator player2"></span>
-            <span id="player2Name">Joueur 2</span>: <span id="player2Score">0</span>
+            <input type="color" id="right-color" class="color-input" style="width:24px;height:24px;border:none;cursor:pointer;">
+            <input id="right-name-input" class="name-input-p4" placeholder="Joueur 2" style="flex:1;min-width:80px;">
+            <span id="player2Score">0</span>
           </div>
         </div>
       </div>
 
       <div class="p4-controls">
         <button class="btn btn-p4" id="newGameBtn">Nouvelle partie</button>
-        <button class="btn btn-p4 btn.ghost" id="resetScoreBtn">Réinitialiser scores</button>
+        <button class="btn btn-p4 ghost" id="resetScoreBtn">Réinitialiser scores</button>
+        <!-- Les skins sont gérés via le gacha/inventaire -->
       </div>
 
       <div class="p4-stats">
@@ -57,6 +77,16 @@
     </div>
   </div>
 
+  <!-- popup partagé (utilisé par openGacha/openInventory) -->
+  <div id="popup" class="popup hidden">
+    <div class="popup-content">
+      <h2 id="popup-title"></h2>
+      <div id="popup-body"></div>
+      <button class="btn" onclick="closePopup()">Fermer</button>
+    </div>
+  </div>
+
+  <script src="gacha_pages.js"></script>
   <script src="jeudifferent.js"></script>
 </body>
 </html>
