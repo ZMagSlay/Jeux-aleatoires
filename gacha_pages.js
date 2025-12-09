@@ -92,6 +92,42 @@
         { name: "Starlight", id: "starlight", rarity: "legendary" }
       ];
 
+      // Snake skins pool
+      const SNAKE_SKINS = [
+        // --- COMMON ---
+        { name: "Classic", id: "classic", rarity: "common", type: "snake-skin" },
+        { name: "Green", id: "green", rarity: "common", type: "snake-skin" },
+        { name: "Blue", id: "blue", rarity: "common", type: "snake-skin" },
+        { name: "Purple", id: "purple", rarity: "common", type: "snake-skin" },
+        { name: "Orange", id: "orange", rarity: "common", type: "snake-skin" },
+
+        // --- UNCOMMON ---
+        { name: "Neon", id: "neon", rarity: "uncommon", type: "snake-skin" },
+        { name: "Glass", id: "glass", rarity: "uncommon", type: "snake-skin" },
+        { name: "Metal", id: "metal", rarity: "uncommon", type: "snake-skin" },
+        { name: "Fire", id: "fire", rarity: "uncommon", type: "snake-skin" },
+        { name: "Ice", id: "ice", rarity: "uncommon", type: "snake-skin" },
+        { name: "Marble", id: "marble", rarity: "uncommon", type: "snake-skin" },
+
+        // --- RARE ---
+        { name: "Gold", id: "gold", rarity: "rare", type: "snake-skin" },
+        { name: "Rainbow", id: "rainbow", rarity: "rare", type: "snake-skin" },
+        { name: "Gradient", id: "gradient", rarity: "rare", type: "snake-skin" },
+        { name: "Glow", id: "glow", rarity: "rare", type: "snake-skin" },
+        { name: "Aurora", id: "aurora", rarity: "rare", type: "snake-skin" },
+
+        // --- EPIC ---
+        { name: "Galaxy", id: "galaxy", rarity: "epic", type: "snake-skin" },
+        { name: "Cosmic", id: "cosmic", rarity: "epic", type: "snake-skin" },
+        { name: "Lightning", id: "lightning", rarity: "epic", type: "snake-skin" },
+        { name: "Lava", id: "lava", rarity: "epic", type: "snake-skin" },
+
+        // --- LEGENDARY ---
+        { name: "Void", id: "void", rarity: "legendary", type: "snake-skin" },
+        { name: "Infinity", id: "infinity", rarity: "legendary", type: "snake-skin" },
+        { name: "Phoenix", id: "phoenix", rarity: "legendary", type: "snake-skin" }
+      ];
+
   const PULL_COST = 20;
   const INIT_MONEY = 50;
 
@@ -148,6 +184,7 @@
     if (!item || !inv) return false;
     if (item.type === 'font') return inv.some(i => i.type === 'font' && i.css === item.css);
     if (item.type === 'skin') return inv.some(i => i.type === 'skin' && i.id === item.id);
+    if (item.type === 'snake-skin') return inv.some(i => i.type === 'snake-skin' && i.id === item.id);
     // fallback: try to match by name
     return inv.some(i => i.name === item.name);
   }
@@ -202,6 +239,19 @@
     refreshInPageQuickInv(player);
   };
 
+  // Équiper un skin de serpent pour Snake
+  window.equipSnakeSkin = function(player, skinId){
+    if (!skinId) return;
+    localStorage.setItem('snake-skin-' + player, skinId);
+    // Apply skin to body if on Snake page
+    try { 
+      const equippedSkin = localStorage.getItem('snake-skin-' + player) || 'classic';
+      document.body.setAttribute('data-snake-skin-' + player, equippedSkin);
+    } catch(e) {}
+    // refresh quick-inv displays if present
+    refreshInPageQuickInv(player);
+  };
+
   window.applyFonts = function(){
     const f1 = localStorage.getItem('font1');
     const f2 = localStorage.getItem('font2');
@@ -238,6 +288,11 @@
   window.closePopup = function(){
     const popup = document.getElementById('popup');
     if (popup) popup.classList.add('hidden');
+    
+    // Recharger les skins du Snake s'il y a une instance active
+    if (typeof window.snakeGameInstance !== 'undefined' && window.snakeGameInstance) {
+      window.snakeGameInstance.reloadEquippedSkins();
+    }
   };
 
   /* ---------- in-page openGacha / openInventory (popup-only) ---------- */
@@ -252,21 +307,32 @@
     // retirer l'argent
     addMoney(player, -PULL_COST);
 
-    // Choix aléatoire: majoritairement fonts, parfois skins (respect des raretés via pool séparée)
+    // Choix aléatoire: majoritairement fonts, parfois skins P4 ou Snake
     let item;
-    if (Math.random() < 0.65) {
+    const rand = Math.random();
+    if (rand < 0.50) {
+      // 50% Fonts
       const pick = FONTS[Math.floor(Math.random()*FONTS.length)];
       item = { type: 'font', name: pick.name, css: pick.css, rarity: pick.rarity, id: Date.now() };
-    } else {
+    } else if (rand < 0.75) {
+      // 25% P4 Skins
       const pick = SKINS[Math.floor(Math.random()*SKINS.length)];
       item = { type: 'skin', name: pick.name, id: pick.id, rarity: pick.rarity };
+    } else {
+      // 25% Snake Skins
+      const pick = SNAKE_SKINS[Math.floor(Math.random()*SNAKE_SKINS.length)];
+      item = { type: 'snake-skin', name: pick.name, id: pick.id, rarity: pick.rarity };
     }
 
     const added = addToInv(player, item);
 
     if (!added) {
       // Already have this item — show type-aware message
-      const itemType = item.type === 'font' ? '📝 Ecriture' : '🎨 Jeton';
+      let itemType = '';
+      if (item.type === 'font') itemType = '📝 Ecriture';
+      else if (item.type === 'skin') itemType = '🎨 Jeton P4';
+      else itemType = '🐍 Serpent';
+      
       const preview = item.type === 'font' ?
         `<div style="font-family:${item.css};font-weight:700;font-size:18px">${item.name}</div>` :
         `<div style="font-weight:700;font-size:18px">${item.name}</div>`;
@@ -291,7 +357,11 @@
     }
 
     // affiche le résultat (sans ajouter un deuxième "Fermer" — on laisse le popup global gérer la fermeture)
-    const itemType = item.type === 'font' ? '📝 Ecriture' : '🎨 Jeton';
+    let itemType = '';
+    if (item.type === 'font') itemType = '📝 Ecriture';
+    else if (item.type === 'skin') itemType = '🎨 Jeton P4';
+    else itemType = '🐍 Serpent';
+    
     const previewHtml = item.type === 'font' ?
       `<div style="font-family:${item.css};font-weight:700;font-size:18px">${item.name}</div>` :
       `<div style="font-weight:700;font-size:18px">${item.name}</div>`;
@@ -323,6 +393,9 @@
             localStorage.setItem('p4-token-skin-' + player, item.id);
             try { document.body.setAttribute('data-token-skin-' + player, item.id); } catch(e){}
           }
+        } else if (item.type === 'snake-skin') {
+          localStorage.setItem('snake-skin-' + player, item.id);
+          try { document.body.setAttribute('data-snake-skin-' + player, item.id); } catch(e){}
         }
         // indicate equipped in popup
         const b = document.getElementById('popup-body');
@@ -353,12 +426,14 @@ window.openInventory = function(player){
   // récupère la font et le skin actuellement équipés pour ce joueur
   const equippedCss = localStorage.getItem('font' + player) || 'default';
   const equippedSkin = localStorage.getItem('p4-token-skin-' + player) || 'classic';
+  const equippedSnakeSkin = localStorage.getItem('snake-skin-' + player) || 'classic';
 
-  // séparer fonts et skins
+  // séparer fonts, skins P4 et skins Snake
   const fonts = inv.filter(f => f.type === 'font');
   const skins = inv.filter(f => f.type === 'skin');
+  const snakeSkins = inv.filter(f => f.type === 'snake-skin');
 
-  // construit le html avec tabs : Fonts et Skins
+  // construit le html avec tabs : Fonts, P4 Skins et Snake Skins
   let html = `
     <div style="display:flex;gap:8px;margin-bottom:12px;border-bottom:2px solid rgba(255,255,255,0.1);">
       <button class="tab-btn active" data-tab="fonts" style="flex:1;padding:8px;border:none;background:transparent;color:var(--accent);cursor:pointer;border-bottom:2px solid var(--accent);font-weight:700;">
@@ -366,6 +441,9 @@ window.openInventory = function(player){
       </button>
       <button class="tab-btn" data-tab="skins" style="flex:1;padding:8px;border:none;background:transparent;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;font-weight:700;">
         🎨 Jeton (${skins.length})
+      </button>
+      <button class="tab-btn" data-tab="snakeskins" style="flex:1;padding:8px;border:none;background:transparent;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;font-weight:700;">
+        🐍 Serpent (${snakeSkins.length})
       </button>
     </div>
 
@@ -415,6 +493,30 @@ window.openInventory = function(player){
     `;
   });
 
+  html += `</div>
+
+    <div id="snakeskins-container" class="tab-content" style="display:none;flex-direction:column;gap:10px;max-width:420px;">
+  `;
+
+  // Afficher les skins de serpent
+  snakeSkins.forEach((ss, idx)=>{
+    const itemIdx = inv.indexOf(ss);
+    const isEquipped = (ss.id === equippedSnakeSkin);
+    html += `
+      <div class="inv-row" data-idx="${itemIdx}" data-player="${player}" 
+           style="display:flex;justify-content:space-between;align-items:center;padding:8px;border-radius:8px;background:rgba(255,255,255,0.02);">
+        <div style="display:flex;gap:8px;align-items:center;flex:1">
+          <div style="min-width:140px;font-weight:700;">${ss.name}</div>
+          <div style="color:var(--muted);font-size:11px;padding:2px 6px;background:rgba(255,255,255,0.1);border-radius:4px;">${ss.rarity || 'unknown'}</div>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center;">
+          <button class="btn small equip-btn" data-idx="${itemIdx}" data-player="${player}" style="padding:6px 10px;font-size:12px;">Équiper</button>
+          <div class="equipped-badge" style="font-weight:700;color:lightgreen;font-size:12px;display:${isEquipped ? 'block' : 'none'};">✓</div>
+        </div>
+      </div>
+    `;
+  });
+
   html += `</div>`;
 
   // affiche la popup (ne contient pas de bouton fermer supplémentaire)
@@ -428,6 +530,7 @@ window.openInventory = function(player){
   const tabBtns = popupBody.querySelectorAll('button.tab-btn');
   const fontsContainer = popupBody.querySelector('#fonts-container');
   const skinsContainer = popupBody.querySelector('#skins-container');
+  const snakeSkinsContainer = popupBody.querySelector('#snakeskins-container');
 
   tabBtns.forEach(btn => {
     btn.addEventListener('click', () => {
@@ -446,15 +549,21 @@ window.openInventory = function(player){
       if (targetTab === 'fonts') {
         if (fontsContainer) fontsContainer.style.display = 'flex';
         if (skinsContainer) skinsContainer.style.display = 'none';
+        if (snakeSkinsContainer) snakeSkinsContainer.style.display = 'none';
       } else if (targetTab === 'skins') {
         if (fontsContainer) fontsContainer.style.display = 'none';
         if (skinsContainer) skinsContainer.style.display = 'flex';
+        if (snakeSkinsContainer) snakeSkinsContainer.style.display = 'none';
+      } else if (targetTab === 'snakeskins') {
+        if (fontsContainer) fontsContainer.style.display = 'none';
+        if (skinsContainer) skinsContainer.style.display = 'none';
+        if (snakeSkinsContainer) snakeSkinsContainer.style.display = 'flex';
       }
     });
   });
 
   // fonction utilitaire pour rafraîchir les badges "Équipé" dans la popup
-  function refreshPopupBadges(equippedValue, isSkin){
+  function refreshPopupBadges(equippedValue, itemType){
     const rows = popupBody.querySelectorAll('.inv-row');
     rows.forEach(row=>{
       const idx = Number(row.getAttribute('data-idx'));
@@ -463,9 +572,11 @@ window.openInventory = function(player){
       if (!badge) return;
       if (!item) { badge.style.display = 'none'; return; }
       
-      if (item.type === 'font' && !isSkin) {
+      if (item.type === 'font' && itemType === 'font') {
         badge.style.display = (item.css === equippedValue) ? 'block' : 'none';
-      } else if (item.type === 'skin' && isSkin) {
+      } else if (item.type === 'skin' && itemType === 'skin') {
+        badge.style.display = (item.id === equippedValue) ? 'block' : 'none';
+      } else if (item.type === 'snake-skin' && itemType === 'snake-skin') {
         badge.style.display = (item.id === equippedValue) ? 'block' : 'none';
       } else {
         badge.style.display = 'none';
@@ -486,7 +597,7 @@ window.openInventory = function(player){
       if (item.type === 'font') {
         equipFont(pl, idx); // equip by index
         // rafraîchir seulement les badges de fonts
-        refreshPopupBadges(item.css, false);
+        refreshPopupBadges(item.css, 'font');
       } else if (item.type === 'skin') {
         if (typeof window.equipSkin === 'function') window.equipSkin(pl, item.id);
         else { 
@@ -494,7 +605,15 @@ window.openInventory = function(player){
           try{ document.body.setAttribute('data-token-skin', item.id);}catch(e){}
         }
         // rafraîchir seulement les badges de skins
-        refreshPopupBadges(item.id, true);
+        refreshPopupBadges(item.id, 'skin');
+      } else if (item.type === 'snake-skin') {
+        if (typeof window.equipSnakeSkin === 'function') window.equipSnakeSkin(pl, item.id);
+        else {
+          localStorage.setItem('snake-skin-' + pl, item.id);
+          try{ document.body.setAttribute('data-snake-skin-' + pl, item.id);}catch(e){}
+        }
+        // rafraîchir seulement les badges de snake skins
+        refreshPopupBadges(item.id, 'snake-skin');
       }
 
       // affiche confirmation brève dans la popup (sans fermer)

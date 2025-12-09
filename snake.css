@@ -1,0 +1,229 @@
+/* ---- SNAKE GAME STYLES ---- */
+
+.snake-container {
+  display: flex;
+  flex-direction: row;
+  gap: 20px;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 20px;
+  margin: 0 auto;
+}
+
+.snake-info {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 180px;
+  height: fit-content;
+  background: var(--glass-2);
+  padding: 16px;
+  border-radius: var(--soft-radius);
+  text-align: center;
+  box-shadow: var(--shadow);
+}
+
+.snake-info.left {
+  border-left: 3px solid #ff6b6b;
+}
+
+.snake-info.right {
+  border-left: 3px solid #ffd93d;
+}
+
+.snake-info .name-input {
+  display: block;
+  width: 100%;
+  max-width: 160px;
+  margin: 0 auto;
+  text-align: center;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--accent);
+  padding: 6px 8px;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.snake-info .name-input:focus {
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
+.snake-info .name-input::placeholder {
+  color: rgba(230, 238, 248, 0.44);
+  text-align: center;
+}
+
+.color-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.color-input {
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  background: transparent;
+}
+
+.score-display {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--accent);
+  margin: 6px 0;
+}
+
+.status-display {
+  font-size: 13px;
+  color: var(--muted);
+  padding: 6px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.status-display.alive {
+  color: #7CFFB2;
+  background: rgba(124, 255, 178, 0.1);
+}
+
+.status-display.dead {
+  color: #ff6b6b;
+  background: rgba(255, 107, 107, 0.1);
+}
+
+.game-area {
+  position: relative;
+  display: inline-block;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 12px 40px rgba(2, 6, 23, 0.6);
+  background: #0a0e14;
+  order: 0;
+}
+
+#gameCanvas {
+  display: block;
+  border: 2px solid rgba(125, 211, 252, 0.1);
+  background: #0f1319;
+}
+
+.game-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(15, 19, 25, 0.85);
+  backdrop-filter: blur(4px);
+  z-index: 100;
+}
+
+.game-overlay.hidden {
+  display: none;
+}
+
+.timer-display {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.6);
+  color: var(--accent);
+  font-size: 24px;
+  font-weight: 800;
+  padding: 6px 16px;
+  border-radius: 8px;
+  z-index: 101;
+  min-width: 80px;
+  text-align: center;
+  font-family: 'Courier New', monospace;
+  letter-spacing: 2px;
+}
+
+.timer-display.danger {
+  color: #ff6b6b;
+  background: rgba(255, 107, 107, 0.2);
+}
+
+.result-display {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(15, 19, 25, 0.95);
+  backdrop-filter: blur(6px);
+  z-index: 102;
+  gap: 20px;
+}
+
+.result-display #resultText {
+  font-size: 32px;
+  font-weight: 900;
+  color: var(--accent);
+  text-align: center;
+  max-width: 400px;
+  line-height: 1.4;
+}
+
+.result-display .btn {
+  font-size: 16px;
+  padding: 12px 24px;
+}
+
+/* Contrôles clavier affichés */
+.keyboard-hint {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 12px;
+  color: var(--muted);
+  text-align: center;
+  z-index: 99;
+}
+
+/* Boutons désactivés pendant la partie */
+.gacha-btn:disabled, .inventory-btn:disabled {
+  opacity: 0.5 !important;
+  cursor: not-allowed !important;
+  pointer-events: none;
+}
+
+@media (max-width: 768px) {
+  .snake-container {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  #gameCanvas {
+    width: 100%;
+    height: auto;
+    max-width: 100%;
+  }
+
+  .snake-info {
+    width: 100%;
+    max-width: 300px;
+  }
+
+  .timer-display {
+    font-size: 20px;
+    padding: 4px 12px;
+  }
+
+  .result-display #resultText {
+    font-size: 24px;
+  }
+}
