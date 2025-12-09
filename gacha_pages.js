@@ -122,10 +122,38 @@
         { name: "Lightning", id: "lightning", rarity: "epic", type: "snake-skin" },
         { name: "Lava", id: "lava", rarity: "epic", type: "snake-skin" },
 
+        // --- RARE ---
+        { name: "Gold", id: "gold", rarity: "rare", type: "snake-skin" },
+        { name: "Rainbow", id: "rainbow", rarity: "rare", type: "snake-skin" },
+        { name: "Gradient", id: "gradient", rarity: "rare", type: "snake-skin" },
+        { name: "Glow", id: "glow", rarity: "rare", type: "snake-skin" },
+        { name: "Aurora", id: "aurora", rarity: "rare", type: "snake-skin" },
+
+        // --- RARE (ajouts équilibrage) ---
+        { name: "Iridescent", id: "iridescent", rarity: "rare", type: "snake-skin" },
+        { name: "Frost", id: "frost", rarity: "rare", type: "snake-skin" },
+        { name: "Haze", id: "haze", rarity: "rare", type: "snake-skin" },
+
+        // --- EPIC ---
+        { name: "Galaxy", id: "galaxy", rarity: "epic", type: "snake-skin" },
+        { name: "Cosmic", id: "cosmic", rarity: "epic", type: "snake-skin" },
+        { name: "Lightning", id: "lightning", rarity: "epic", type: "snake-skin" },
+        { name: "Lava", id: "lava", rarity: "epic", type: "snake-skin" },
+        
+        // --- EPIC (ajouts) ---
+        { name: "Neon Wave", id: "neonwave", rarity: "epic", type: "snake-skin" },
+        { name: "Electro", id: "electro", rarity: "epic", type: "snake-skin" },
+        { name: "Prism", id: "prism", rarity: "epic", type: "snake-skin" },
+
         // --- LEGENDARY ---
         { name: "Void", id: "void", rarity: "legendary", type: "snake-skin" },
         { name: "Infinity", id: "infinity", rarity: "legendary", type: "snake-skin" },
-        { name: "Phoenix", id: "phoenix", rarity: "legendary", type: "snake-skin" }
+        { name: "Phoenix", id: "phoenix", rarity: "legendary", type: "snake-skin" },
+
+        // --- LEGENDARY (ajouts flashy mais non intrusifs) ---
+        { name: "Chromaflare", id: "chromaflare", rarity: "legendary", type: "snake-skin" },
+        { name: "Spectral", id: "spectral", rarity: "legendary", type: "snake-skin" },
+        { name: "Nova", id: "nova", rarity: "legendary", type: "snake-skin" }
       ];
 
   const PULL_COST = 20;

@@ -30,10 +30,32 @@ const SNAKE_SKINS = [
   { name: "Lightning", id: "lightning", rarity: "epic" },
   { name: "Lava", id: "lava", rarity: "epic" },
 
+  // --- RARE ---
+  { name: "Gold", id: "gold", rarity: "rare" },
+  { name: "Rainbow", id: "rainbow", rarity: "rare" },
+  { name: "Gradient", id: "gradient", rarity: "rare" },
+  { name: "Glow", id: "glow", rarity: "rare" },
+  { name: "Aurora", id: "aurora", rarity: "rare" },
+  { name: "Iridescent", id: "iridescent", rarity: "rare" },
+  { name: "Frost", id: "frost", rarity: "rare" },
+  { name: "Haze", id: "haze", rarity: "rare" },
+
+  // --- EPIC ---
+  { name: "Galaxy", id: "galaxy", rarity: "epic" },
+  { name: "Cosmic", id: "cosmic", rarity: "epic" },
+  { name: "Lightning", id: "lightning", rarity: "epic" },
+  { name: "Lava", id: "lava", rarity: "epic" },
+  { name: "Neon Wave", id: "neonwave", rarity: "epic" },
+  { name: "Electro", id: "electro", rarity: "epic" },
+  { name: "Prism", id: "prism", rarity: "epic" },
+
   // --- LEGENDARY ---
   { name: "Void", id: "void", rarity: "legendary" },
   { name: "Infinity", id: "infinity", rarity: "legendary" },
-  { name: "Phoenix", id: "phoenix", rarity: "legendary" }
+  { name: "Phoenix", id: "phoenix", rarity: "legendary" },
+  { name: "Chromaflare", id: "chromaflare", rarity: "legendary" },
+  { name: "Spectral", id: "spectral", rarity: "legendary" },
+  { name: "Nova", id: "nova", rarity: "legendary" }
 ];
 
 class SnakeGame {
@@ -43,7 +65,7 @@ class SnakeGame {
     this.gridSize = 20;
     this.gameRunning = false;
     this.gameOver = false;
-    this.timeLeft = 300; // 5 minutes en secondes
+    this.timeLeft = 60; // 5 minutes en secondes
     this.timerInterval = null;
 
     // Joueurs
@@ -217,7 +239,7 @@ class SnakeGame {
     // Démarrer le jeu
     this.gameRunning = true;
     this.gameOver = false;
-    this.timeLeft = 300;
+    this.timeLeft = 60;
     this.updateScoreDisplay();
 
     // Démarrer le timer
@@ -604,6 +626,19 @@ class SnakeGame {
       infinity: { head: '#00ffff', body: '#00ccff', border: '#0099ff', effect: 'glow' },
       phoenix: { head: '#ff6347', body: '#ff8c00', border: '#ffa500', effect: 'glow' }
     };
+
+    // Additions for new skins (balanced effects by rarity)
+    colorMap.iridescent = { head: '#caa6ff', body: '#b3f5ff', border: '#a28bff', effect: 'glow' };
+    colorMap.frost = { head: '#e6f7ff', body: '#cfeeff', border: '#89d8ff', effect: 'glass' };
+    colorMap.haze = { head: '#dcd6ff', body: '#c7d2ff', border: '#9aa2ff', effect: 'pattern' };
+
+    colorMap.neonwave = { head: '#00ffd5', body: '#00a3ff', border: '#0044ff', effect: 'gradient' };
+    colorMap.electro = { head: '#fff200', body: '#ffe066', border: '#ffd600', effect: 'glow' };
+    colorMap.prism = { head: '#ff3cac', body: '#00d4ff', border: '#ffd700', effect: 'rainbow' };
+
+    colorMap.chromaflare = { head: '#ff9de2', body: '#9dfffb', border: '#ffd27a', effect: 'holo' };
+    colorMap.spectral = { head: '#d8b4fe', body: '#a5b4fc', border: '#7c3aed', effect: 'spectral' };
+    colorMap.nova = { head: '#ffd6a5', body: '#ff9e9e', border: '#ff6b6b', effect: 'aurora' };
 
     return colorMap[skinId] || colorMap.classic;
   }
