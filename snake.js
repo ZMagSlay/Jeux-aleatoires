@@ -67,6 +67,7 @@ class SnakeGame {
     this.gameOver = false;
     this.timeLeft = 60; // 5 minutes en secondes
     this.timerInterval = null;
+    this.tick = 0; // global tick counter (increments each game loop)
 
     // Joueurs
     this.players = {
@@ -79,6 +80,11 @@ class SnakeGame {
         alive: true,
         color: '#ff6b6b',
         skinId: 'classic'
+        ,
+        invincible: false,
+        invincibleExpires: 0,
+        slowFactor: 1,
+        slowExpires: 0
       },
       2: {
         name: 'Joueur 2',
@@ -89,6 +95,11 @@ class SnakeGame {
         alive: true,
         color: '#ffd93d',
         skinId: 'classic'
+        ,
+        invincible: false,
+        invincibleExpires: 0,
+        slowFactor: 1,
+        slowExpires: 0
       }
     };
 
@@ -276,7 +287,15 @@ class SnakeGame {
   generateApples() {
     this.apples = [];
     for (let i = 0; i < this.appleCount; i++) {
-      this.apples.push(this.getRandomPosition());
+      const pos = this.getRandomPosition();
+      // Weighted chances: 80% normal, 10% gold, 5% blue (invincible), 5% green (slow)
+      const r = Math.random();
+      let type = 'normal';
+      if (r < 0.80) type = 'normal';
+      else if (r < 0.90) type = 'gold';
+      else if (r < 0.95) type = 'blue';
+      else type = 'green';
+      this.apples.push(Object.assign(pos, { type }));
     }
   }
 
@@ -376,6 +395,20 @@ class SnakeGame {
   gameLoop() {
     if (!this.gameRunning) return;
 
+    // advance global tick and clear expired effects
+    this.tick++;
+    for (let p of [1,2]) {
+      const pl = this.players[p];
+      if (pl.invincible && pl.invincibleExpires && Date.now() > pl.invincibleExpires) {
+        pl.invincible = false;
+        pl.invincibleExpires = 0;
+      }
+      if (pl.slowFactor && pl.slowFactor > 1 && pl.slowExpires && Date.now() > pl.slowExpires) {
+        pl.slowFactor = 1;
+        pl.slowExpires = 0;
+      }
+    }
+
     // Mettre à jour les directions
     this.players[1].direction = this.players[1].nextDirection;
     this.players[2].direction = this.players[2].nextDirection;
@@ -396,6 +429,13 @@ class SnakeGame {
     
     if (!player.alive) return;
 
+    // slow effect: move only every `slowFactor` ticks when slowed
+    if (player.slowFactor && player.slowFactor > 1) {
+      if (this.tick % player.slowFactor !== 0) {
+        return; // skip movement this tick
+      }
+    }
+
     const head = player.snake[0];
     const newHead = {
       x: head.x + player.direction.x,
@@ -405,24 +445,36 @@ class SnakeGame {
     // Vérifier collision avec mur
     if (newHead.x < 0 || newHead.x >= this.gridWidth || 
         newHead.y < 0 || newHead.y >= this.gridHeight) {
-      player.alive = false;
-      this.endGame();
-      return;
+      if (player.invincible) {
+        // wrap-around while invincible to avoid interrupting gameplay
+        newHead.x = (newHead.x + this.gridWidth) % this.gridWidth;
+        newHead.y = (newHead.y + this.gridHeight) % this.gridHeight;
+      } else {
+        player.alive = false;
+        this.endGame();
+        return;
+      }
     }
 
     // Vérifier collision avec propre queue
     if (player.snake.some(seg => seg.x === newHead.x && seg.y === newHead.y)) {
-      player.alive = false;
-      this.endGame();
-      return;
+      if (!player.invincible) {
+        player.alive = false;
+        this.endGame();
+        return;
+      }
+      // if invincible, ignore self-collision
     }
 
     // Vérifier collision avec autre serpent
     const otherPlayer = playerNum === 1 ? 2 : 1;
     if (this.players[otherPlayer].snake.some(seg => seg.x === newHead.x && seg.y === newHead.y)) {
-      player.alive = false;
-      this.endGame();
-      return;
+      if (!player.invincible) {
+        player.alive = false;
+        this.endGame();
+        return;
+      }
+      // if invincible, ignore collision with other snake
     }
 
     // Ajouter la nouvelle tête
@@ -431,9 +483,32 @@ class SnakeGame {
     // Vérifier collision avec pomme
     const appleIndex = this.apples.findIndex(a => a.x === newHead.x && a.y === newHead.y);
     if (appleIndex !== -1) {
-      player.score++;
+      const apple = this.apples[appleIndex];
+      const type = apple.type || 'normal';
+      if (type === 'normal') {
+        player.score++;
+      } else if (type === 'gold') {
+        player.score += 3;
+      } else if (type === 'blue') {
+        player.invincible = true;
+        player.invincibleExpires = Date.now() + 3500; // 3.5 seconds
+      } else if (type === 'green') {
+        // slow the opponent
+        const opp = this.players[otherPlayer];
+        opp.slowFactor = 2; // move every 2 ticks ~ half speed
+        opp.slowExpires = Date.now() + 2500; // 2.5 seconds
+      }
+
+      // remove and replace with a new apple that can also be special
       this.apples.splice(appleIndex, 1);
-      this.apples.push(this.getRandomPosition());
+      const pos = this.getRandomPosition();
+      const r = Math.random();
+      let newType = 'normal';
+      if (r < 0.80) newType = 'normal';
+      else if (r < 0.90) newType = 'gold';
+      else if (r < 0.95) newType = 'blue';
+      else newType = 'green';
+      this.apples.push(Object.assign(pos, { type: newType }));
     } else {
       // Enlever la queue si pas de pomme
       player.snake.pop();
@@ -646,9 +721,13 @@ class SnakeGame {
   drawApple(apple) {
     const x = apple.x * this.gridSize;
     const y = apple.y * this.gridSize;
+    // choose appearance by type
+    const t = apple.type || 'normal';
+    if (t === 'gold') this.ctx.fillStyle = '#ffd700';
+    else if (t === 'blue') this.ctx.fillStyle = '#4da6ff';
+    else if (t === 'green') this.ctx.fillStyle = '#51cf66';
+    else this.ctx.fillStyle = '#ff6b6b';
 
-    // Pomme rouge
-    this.ctx.fillStyle = '#ff6b6b';
     this.ctx.beginPath();
     this.ctx.arc(x + this.gridSize / 2, y + this.gridSize / 2, this.gridSize / 2 - 2, 0, Math.PI * 2);
     this.ctx.fill();
@@ -659,8 +738,8 @@ class SnakeGame {
     this.ctx.arc(x + this.gridSize / 3, y + this.gridSize / 3, 3, 0, Math.PI * 2);
     this.ctx.fill();
 
-    // Tige
-    this.ctx.strokeStyle = '#8b4513';
+    // Tige (darker for special apples)
+    this.ctx.strokeStyle = t === 'gold' ? '#b8860b' : '#8b4513';
     this.ctx.lineWidth = 2;
     this.ctx.beginPath();
     this.ctx.moveTo(x + this.gridSize / 2, y + 2);
@@ -679,10 +758,32 @@ class SnakeGame {
     document.getElementById('score-left').textContent = `${name1}: ${score1}`;
     document.getElementById('score-right').textContent = `${name2}: ${score2}`;
 
-    document.getElementById('status-left').textContent = this.players[1].alive ? '🟢 En jeu' : '💀 Éliminé';
+    // show alive/dead + active temporary effects
+    const p1 = this.players[1];
+    const p2 = this.players[2];
+
+    let statusLeft = p1.alive ? '🟢 En jeu' : '💀 Éliminé';
+    if (p1.invincible) {
+      const sec = Math.ceil(Math.max(0, (p1.invincibleExpires - Date.now()) / 1000));
+      statusLeft += ` • 🛡️ Invincible (${sec}s)`;
+    }
+    if (p1.slowFactor && p1.slowFactor > 1) {
+      const sec = Math.ceil(Math.max(0, (p1.slowExpires - Date.now()) / 1000));
+      statusLeft += ` • 🐢 Ralenti (${sec}s)`;
+    }
+    document.getElementById('status-left').textContent = statusLeft;
     document.getElementById('status-left').className = `status-display ${alive1}`;
 
-    document.getElementById('status-right').textContent = this.players[2].alive ? '🟢 En jeu' : '💀 Éliminé';
+    let statusRight = p2.alive ? '🟢 En jeu' : '💀 Éliminé';
+    if (p2.invincible) {
+      const sec = Math.ceil(Math.max(0, (p2.invincibleExpires - Date.now()) / 1000));
+      statusRight += ` • 🛡️ Invincible (${sec}s)`;
+    }
+    if (p2.slowFactor && p2.slowFactor > 1) {
+      const sec = Math.ceil(Math.max(0, (p2.slowExpires - Date.now()) / 1000));
+      statusRight += ` • 🐢 Ralenti (${sec}s)`;
+    }
+    document.getElementById('status-right').textContent = statusRight;
     document.getElementById('status-right').className = `status-display ${alive2}`;
   }
 
