@@ -45,6 +45,8 @@ class SnakeCoopGame {
     // Bots (enemy snakes)
     this.bots = [];
     this.botIdCounter = 0;
+    // Effets visuels (ex. explosion quand un bot meurt)
+    this.deathEffects = [];
 
     // Configuration du jeu
     this.gridWidth = Math.floor(this.canvas.width / this.gridSize);
@@ -64,6 +66,10 @@ class SnakeCoopGame {
 
     // Affichage initial
     this.drawInitialBoard();
+  }
+
+  spawnDeathEffect(x, y, color) {
+    this.deathEffects.push({ x, y, color: color || '#dd4444', life: 12, maxLife: 12, radius: 8 });
   }
 
   loadPlayerData() {
@@ -320,9 +326,10 @@ class SnakeCoopGame {
       let collided = false;
       for (let p of [1, 2]) {
         if (this.players[p].snake.some(seg => seg.x === newHead.x && seg.y === newHead.y)) {
-          // player collides with bot
-          this.players[p].alive = false;
+          // Bot collides with a player -> bot dies instead of killing the player
           collided = true;
+          // reward the player
+          this.players[p].score += 1;
           break;
         }
       }
@@ -337,8 +344,9 @@ class SnakeCoopGame {
       }
 
       if (collided) {
-        // remove this bot
+        // remove this bot and spawn death effect
         this.bots.splice(i, 1);
+        this.spawnDeathEffect(newHead.x, newHead.y, '#dd4444');
         continue;
       }
 
@@ -503,10 +511,22 @@ class SnakeCoopGame {
     }
 
     // Vérifier collision avec bots
-    for (let bot of this.bots) {
-      if (bot.snake.some(seg => seg.x === newHead.x && seg.y === newHead.y)) {
-        player.alive = false;
-        return;
+    for (let i = this.bots.length - 1; i >= 0; i--) {
+      const bot = this.bots[i];
+      // check if player's new head hits a bot segment
+      const hitIndex = bot.snake.findIndex(seg => seg.x === newHead.x && seg.y === newHead.y);
+      if (hitIndex !== -1) {
+        if (hitIndex === 0) {
+          // player hit the bot's head -> kill the bot and reward player
+          this.bots.splice(i, 1);
+          player.score += 1;
+          this.spawnDeathEffect(newHead.x, newHead.y, '#dd4444');
+          break;
+        } else {
+          // player hit the bot's body -> player dies
+          player.alive = false;
+          return;
+        }
       }
     }
 
@@ -576,6 +596,18 @@ class SnakeCoopGame {
     // Dessiner les bots
     for (let bot of this.bots) {
       this.drawBotSnake(bot);
+    }
+
+    // Dessiner effets de mort (petits cercles qui s'estompent)
+    for (let i = this.deathEffects.length - 1; i >= 0; i--) {
+      const e = this.deathEffects[i];
+      const alpha = e.life / e.maxLife;
+      this.ctx.beginPath();
+      this.ctx.fillStyle = `rgba(255,100,100,${alpha})`;
+      this.ctx.arc(e.x * this.gridSize + this.gridSize / 2, e.y * this.gridSize + this.gridSize / 2, e.radius * (1 - alpha) + 2, 0, Math.PI * 2);
+      this.ctx.fill();
+      e.life--;
+      if (e.life <= 0) this.deathEffects.splice(i, 1);
     }
 
     // Mettre à jour l'affichage des scores
