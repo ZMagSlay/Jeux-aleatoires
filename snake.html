@@ -37,6 +37,9 @@
   <div class="game-area">
     <canvas id="gameCanvas" width="600" height="600"></canvas>
     
+    <div id="effectOverlayLeft" class="effect-overlay effect-overlay-left" aria-hidden="true"></div>
+    <div id="effectOverlayRight" class="effect-overlay effect-overlay-right" aria-hidden="true"></div>
+
     <div class="game-overlay" id="gameOverlay">
       <button id="playBtn" class="btn large">▶ Jouer</button>
     </div>
@@ -45,6 +48,7 @@
     
     <div class="result-display" id="resultDisplay" style="display: none;">
       <div id="resultText"></div>
+      <div id="matchLog" class="match-log"></div>
       <button id="playAgainBtn" class="btn">Rejouer</button>
     </div>
   </div>

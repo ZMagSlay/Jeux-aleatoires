@@ -83,12 +83,13 @@
   margin: 6px 0;
 }
 
-.status-display {
+ .status-display {
   font-size: 13px;
   color: var(--muted);
   padding: 6px;
   border-radius: 6px;
   background: rgba(255, 255, 255, 0.02);
+  min-height: 36px; /* Reserve space so side panels don't shift when effects appear */
 }
 
 .status-display.alive {
@@ -100,6 +101,94 @@
   color: #ff6b6b;
   background: rgba(255, 107, 107, 0.1);
 }
+
+/* Overlay to display active temporary effects without changing layout */
+.effect-overlay {
+  position: absolute;
+  pointer-events: none;
+  z-index: 103;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.effect-overlay-left {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  max-width: 200px;
+  pointer-events: none;
+  z-index: 103;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.effect-overlay-right {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  max-width: 200px;
+  pointer-events: none;
+  z-index: 103;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.effect-container {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.effect-badge {
+  pointer-events: auto;
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  background: rgba(255,255,255,0.03);
+  color: var(--accent);
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 13px;
+  backdrop-filter: blur(4px);
+}
+
+.effect-badge.invincible { background: rgba(120,180,255,0.08); color: #aee1ff; }
+.effect-badge.slow { background: rgba(150,240,150,0.06); color: #bff1c7; }
+.effect-badge.invert { background: rgba(180,140,240,0.06); color: #e7d8ff; }
+.effect-badge.penalty { background: rgba(160,160,160,0.06); color: #dcdfe1; }
+
+.effect-badge.penalty-flash {
+  background: rgba(255, 100, 100, 0.15);
+  color: #ff9999;
+  font-weight: 800;
+  animation: flash 0.3s ease-out;
+}
+
+.effect-badge.steal-flash {
+  background: rgba(255, 105, 180, 0.15);
+  color: #ff9dd9;
+  font-weight: 800;
+  animation: flash 0.3s ease-out;
+}
+
+@keyframes flash {
+  0% {
+    transform: scale(1.2);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0.9;
+  }
+}
+
+.effect-badge .time { opacity: 0.8; font-weight: 700; }
 
 .game-area {
   position: relative;
@@ -180,6 +269,58 @@
 .result-display .btn {
   font-size: 16px;
   padding: 12px 24px;
+}
+
+#matchLog {
+  width: 90%;
+  max-width: 450px;
+  max-height: 280px;
+  overflow-y: auto;
+  background: rgba(15, 19, 25, 0.6);
+  border: 1px solid rgba(125, 211, 252, 0.2);
+  border-radius: 8px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+#matchLog::-webkit-scrollbar {
+  width: 6px;
+}
+
+#matchLog::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 3px;
+}
+
+#matchLog::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+}
+
+#matchLog::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.match-log-entry {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+.log-time {
+  color: rgba(255, 255, 255, 0.4);
+  font-weight: 700;
+  white-space: nowrap;
+  min-width: 40px;
+}
+
+.log-message {
+  color: var(--muted);
+  word-break: break-word;
 }
 
 /* Contrôles clavier affichés */

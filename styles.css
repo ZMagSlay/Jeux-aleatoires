@@ -413,3 +413,61 @@ body{
   transform: translateY(0);
   box-shadow: 0 2px 8px rgba(255, 107, 107, 0.2);
 }
+
+/* Sections de jeux */
+.game-section {
+  margin-top: 28px;
+  padding: 20px;
+  border-radius: 12px;
+  background: var(--glass-2);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  transition: all 0.2s ease;
+}
+
+.game-section:first-of-type {
+  margin-top: 16px;
+}
+
+.game-section h2 {
+  margin: 0 0 16px 0;
+  font-size: 18px;
+  color: var(--accent);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.game-section .buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+}
+
+.game-section .btn {
+  flex: 1 1 auto;
+  min-width: 140px;
+}
+
+@media (max-width: 560px) {
+  .game-section {
+    margin-top: 16px;
+    padding: 14px;
+  }
+
+  .game-section h2 {
+    font-size: 16px;
+    margin-bottom: 12px;
+  }
+
+  .game-section .buttons {
+    gap: 8px;
+  }
+
+  .game-section .btn {
+    min-width: 120px;
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+}

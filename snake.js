@@ -79,12 +79,17 @@ class SnakeGame {
         score: 0,
         alive: true,
         color: '#ff6b6b',
-        skinId: 'classic'
-        ,
+        skinId: 'classic',
         invincible: false,
         invincibleExpires: 0,
         slowFactor: 1,
-        slowExpires: 0
+        slowExpires: 0,
+        inverted: false,
+        invertedExpires: 0,
+        penaltyNotification: false,
+        penaltyNotificationExpires: 0,
+        stealNotification: false,
+        stealNotificationExpires: 0
       },
       2: {
         name: 'Joueur 2',
@@ -94,18 +99,26 @@ class SnakeGame {
         score: 0,
         alive: true,
         color: '#ffd93d',
-        skinId: 'classic'
-        ,
+        skinId: 'classic',
         invincible: false,
         invincibleExpires: 0,
         slowFactor: 1,
-        slowExpires: 0
+        slowExpires: 0,
+        inverted: false,
+        invertedExpires: 0,
+        penaltyNotification: false,
+        penaltyNotificationExpires: 0,
+        stealNotification: false,
+        stealNotificationExpires: 0
       }
     };
 
     // Pommes
     this.apples = [];
     this.appleCount = 5;
+
+    // Event log for match tracking
+    this.matchLog = [];
 
     // Configuration du jeu
     this.gridWidth = Math.floor(this.canvas.width / this.gridSize);
@@ -232,6 +245,13 @@ class SnakeGame {
     this.players[2].skinId = skin2;
   }
 
+  addMatchLog(message) {
+    const minutes = Math.floor(this.timeLeft / 60);
+    const seconds = this.timeLeft % 60;
+    const time = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    this.matchLog.push({ time, message });
+  }
+
   startGame() {
     // Recharger les skins équipés
     this.reloadEquippedSkins();
@@ -246,6 +266,9 @@ class SnakeGame {
 
     // Désactiver les boutons gacha/inventaire
     this.disableGameButtons();
+
+    // Reset match log
+    this.matchLog = [];
 
     // Démarrer le jeu
     this.gameRunning = true;
@@ -288,13 +311,16 @@ class SnakeGame {
     this.apples = [];
     for (let i = 0; i < this.appleCount; i++) {
       const pos = this.getRandomPosition();
-      // Weighted chances: 80% normal, 10% gold, 5% blue (invincible), 5% green (slow)
+      // Weighted chances: 65% normal, 10% gold, 5% blue (invincible), 5% green (slow), 5% invert (purple), 5% penalty (gray), 5% steal (pink)
       const r = Math.random();
       let type = 'normal';
-      if (r < 0.80) type = 'normal';
-      else if (r < 0.90) type = 'gold';
-      else if (r < 0.95) type = 'blue';
-      else type = 'green';
+      if (r < 0.65) type = 'normal';
+      else if (r < 0.75) type = 'gold';
+      else if (r < 0.80) type = 'blue';
+      else if (r < 0.85) type = 'green';
+      else if (r < 0.90) type = 'invert';
+      else if (r < 0.95) type = 'penalty';
+      else type = 'steal';
       this.apples.push(Object.assign(pos, { type }));
     }
   }
@@ -334,34 +360,34 @@ class SnakeGame {
     const key = e.key.toLowerCase();
     let handled = false;
 
-    // Joueur 1: ZQSD
-    if (key === 'z' && this.players[1].direction.y === 0) {
-      this.players[1].nextDirection = { x: 0, y: -1 };
-      handled = true;
-    } else if (key === 's' && this.players[1].direction.y === 0) {
-      this.players[1].nextDirection = { x: 0, y: 1 };
-      handled = true;
-    } else if (key === 'q' && this.players[1].direction.x === 0) {
-      this.players[1].nextDirection = { x: -1, y: 0 };
-      handled = true;
-    } else if (key === 'd' && this.players[1].direction.x === 0) {
-      this.players[1].nextDirection = { x: 1, y: 0 };
-      handled = true;
+    // Joueur 1: ZQSD (respecte inversion si active)
+    const p1 = this.players[1];
+    if (!p1.inverted) {
+      if (key === 'z' && p1.direction.y === 0) { p1.nextDirection = { x: 0, y: -1 }; handled = true; }
+      else if (key === 's' && p1.direction.y === 0) { p1.nextDirection = { x: 0, y: 1 }; handled = true; }
+      else if (key === 'q' && p1.direction.x === 0) { p1.nextDirection = { x: -1, y: 0 }; handled = true; }
+      else if (key === 'd' && p1.direction.x === 0) { p1.nextDirection = { x: 1, y: 0 }; handled = true; }
+    } else {
+      // inverted controls for player 1
+      if (key === 'z' && p1.direction.y === 0) { p1.nextDirection = { x: 0, y: 1 }; handled = true; }
+      else if (key === 's' && p1.direction.y === 0) { p1.nextDirection = { x: 0, y: -1 }; handled = true; }
+      else if (key === 'q' && p1.direction.x === 0) { p1.nextDirection = { x: 1, y: 0 }; handled = true; }
+      else if (key === 'd' && p1.direction.x === 0) { p1.nextDirection = { x: -1, y: 0 }; handled = true; }
     }
 
-    // Joueur 2: Flèches
-    if (e.key === 'ArrowUp' && this.players[2].direction.y === 0) {
-      this.players[2].nextDirection = { x: 0, y: -1 };
-      handled = true;
-    } else if (e.key === 'ArrowDown' && this.players[2].direction.y === 0) {
-      this.players[2].nextDirection = { x: 0, y: 1 };
-      handled = true;
-    } else if (e.key === 'ArrowLeft' && this.players[2].direction.x === 0) {
-      this.players[2].nextDirection = { x: -1, y: 0 };
-      handled = true;
-    } else if (e.key === 'ArrowRight' && this.players[2].direction.x === 0) {
-      this.players[2].nextDirection = { x: 1, y: 0 };
-      handled = true;
+    // Joueur 2: Flèches (respecte inversion si active)
+    const p2 = this.players[2];
+    if (!p2.inverted) {
+      if (e.key === 'ArrowUp' && p2.direction.y === 0) { p2.nextDirection = { x: 0, y: -1 }; handled = true; }
+      else if (e.key === 'ArrowDown' && p2.direction.y === 0) { p2.nextDirection = { x: 0, y: 1 }; handled = true; }
+      else if (e.key === 'ArrowLeft' && p2.direction.x === 0) { p2.nextDirection = { x: -1, y: 0 }; handled = true; }
+      else if (e.key === 'ArrowRight' && p2.direction.x === 0) { p2.nextDirection = { x: 1, y: 0 }; handled = true; }
+    } else {
+      // inverted controls for player 2 (arrows reversed)
+      if (e.key === 'ArrowUp' && p2.direction.y === 0) { p2.nextDirection = { x: 0, y: 1 }; handled = true; }
+      else if (e.key === 'ArrowDown' && p2.direction.y === 0) { p2.nextDirection = { x: 0, y: -1 }; handled = true; }
+      else if (e.key === 'ArrowLeft' && p2.direction.x === 0) { p2.nextDirection = { x: 1, y: 0 }; handled = true; }
+      else if (e.key === 'ArrowRight' && p2.direction.x === 0) { p2.nextDirection = { x: -1, y: 0 }; handled = true; }
     }
 
     if (handled) {
@@ -406,6 +432,18 @@ class SnakeGame {
       if (pl.slowFactor && pl.slowFactor > 1 && pl.slowExpires && Date.now() > pl.slowExpires) {
         pl.slowFactor = 1;
         pl.slowExpires = 0;
+      }
+      if (pl.inverted && pl.invertedExpires && Date.now() > pl.invertedExpires) {
+        pl.inverted = false;
+        pl.invertedExpires = 0;
+      }
+      if (pl.penaltyNotification && pl.penaltyNotificationExpires && Date.now() > pl.penaltyNotificationExpires) {
+        pl.penaltyNotification = false;
+        pl.penaltyNotificationExpires = 0;
+      }
+      if (pl.stealNotification && pl.stealNotificationExpires && Date.now() > pl.stealNotificationExpires) {
+        pl.stealNotification = false;
+        pl.stealNotificationExpires = 0;
       }
     }
 
@@ -485,18 +523,73 @@ class SnakeGame {
     if (appleIndex !== -1) {
       const apple = this.apples[appleIndex];
       const type = apple.type || 'normal';
+
+      // determine how much the snake should grow from this apple (score-based growth)
+      let growAmount = 0;
       if (type === 'normal') {
-        player.score++;
+        player.score += 1;
+        growAmount = 1;
+        this.addMatchLog(`${player.name} a mangé une pomme 🍎`);
       } else if (type === 'gold') {
         player.score += 3;
+        growAmount = 3;
+        this.addMatchLog(`${player.name} a mangé une pomme d'or 🏆`);
       } else if (type === 'blue') {
+        // invincible
         player.invincible = true;
         player.invincibleExpires = Date.now() + 3500; // 3.5 seconds
+        this.addMatchLog(`${player.name} a pris l'invincibilité 🛡️`);
       } else if (type === 'green') {
         // slow the opponent
         const opp = this.players[otherPlayer];
         opp.slowFactor = 2; // move every 2 ticks ~ half speed
         opp.slowExpires = Date.now() + 2500; // 2.5 seconds
+        this.addMatchLog(`${opp.name} a été ralenti 🐢`);
+      } else if (type === 'invert') {
+        // invert opponent controls for 2 seconds
+        const opp = this.players[otherPlayer];
+        opp.inverted = true;
+        opp.invertedExpires = Date.now() + 2000; // 2 seconds
+        this.addMatchLog(`${opp.name} a les contrôles inversés 🔀`);
+      } else if (type === 'penalty') {
+        // penalty: remove one point from opponent, but don't allow negative scores
+        const opp = this.players[otherPlayer];
+        opp.score = Math.max(0, (opp.score || 0) - 1);
+        // trigger opponent's penalty notification
+        opp.penaltyNotification = true;
+        opp.penaltyNotificationExpires = Date.now() + 1500; // 1.5 seconds
+        // penalty grants no growth to eater
+        growAmount = 0;
+        this.addMatchLog(`${opp.name} a perdu 1 point 📍`);
+      } else if (type === 'steal') {
+        // steal: transfer 1 point from opponent to eater
+        const opp = this.players[otherPlayer];
+        if (opp.score > 0) {
+          opp.score -= 1;
+          player.score += 1;
+          growAmount = 1;
+          // trigger both notifications
+          opp.stealNotification = true;
+          opp.stealNotificationExpires = Date.now() + 1500;
+          player.stealNotification = true;
+          player.stealNotificationExpires = Date.now() + 1500;
+          this.addMatchLog(`${player.name} a volé un point à ${opp.name} 💔`);
+        }
+      }
+
+      // After handling effects, adjust snake length according to growAmount.
+      // We already added the new head. If growAmount > 0, we should avoid shrinking this tick
+      // and immediately add extra segments equal to (growAmount - 1) so score increase matches length.
+      if (growAmount > 0) {
+        // do not pop tail this tick (that keeps +1), add extra segments if needed
+        for (let i = 0; i < growAmount - 1; i++) {
+          const lastSeg = player.snake[player.snake.length - 1];
+          player.snake.push({ x: lastSeg.x, y: lastSeg.y });
+        }
+      } else {
+        // For apples that don't grant growth (special apples or penalty), keep length unchanged
+        // by popping the tail once now.
+        player.snake.pop();
       }
 
       // remove and replace with a new apple that can also be special
@@ -504,10 +597,14 @@ class SnakeGame {
       const pos = this.getRandomPosition();
       const r = Math.random();
       let newType = 'normal';
-      if (r < 0.80) newType = 'normal';
-      else if (r < 0.90) newType = 'gold';
-      else if (r < 0.95) newType = 'blue';
-      else newType = 'green';
+      // Weighted: 65% normal, 10% gold, 5% blue, 5% green, 5% invert, 5% penalty, 5% steal
+      if (r < 0.65) newType = 'normal';
+      else if (r < 0.75) newType = 'gold';
+      else if (r < 0.80) newType = 'blue';
+      else if (r < 0.85) newType = 'green';
+      else if (r < 0.90) newType = 'invert';
+      else if (r < 0.95) newType = 'penalty';
+      else newType = 'steal';
       this.apples.push(Object.assign(pos, { type: newType }));
     } else {
       // Enlever la queue si pas de pomme
@@ -726,6 +823,9 @@ class SnakeGame {
     if (t === 'gold') this.ctx.fillStyle = '#ffd700';
     else if (t === 'blue') this.ctx.fillStyle = '#4da6ff';
     else if (t === 'green') this.ctx.fillStyle = '#51cf66';
+    else if (t === 'invert') this.ctx.fillStyle = '#9b59b6'; // purple invert apple
+    else if (t === 'penalty') this.ctx.fillStyle = '#9aa0a6'; // gray penalty apple
+    else if (t === 'steal') this.ctx.fillStyle = '#ff69b4'; // rose/pink steal apple
     else this.ctx.fillStyle = '#ff6b6b';
 
     this.ctx.beginPath();
@@ -739,7 +839,7 @@ class SnakeGame {
     this.ctx.fill();
 
     // Tige (darker for special apples)
-    this.ctx.strokeStyle = t === 'gold' ? '#b8860b' : '#8b4513';
+    this.ctx.strokeStyle = t === 'gold' ? '#b8860b' : (t === 'invert' ? '#6d2e6b' : (t === 'penalty' ? '#55585b' : (t === 'steal' ? '#c9216b' : '#8b4513')));
     this.ctx.lineWidth = 2;
     this.ctx.beginPath();
     this.ctx.moveTo(x + this.gridSize / 2, y + 2);
@@ -758,33 +858,69 @@ class SnakeGame {
     document.getElementById('score-left').textContent = `${name1}: ${score1}`;
     document.getElementById('score-right').textContent = `${name2}: ${score2}`;
 
-    // show alive/dead + active temporary effects
+    // show alive/dead (keep status blocks compact so they don't resize)
     const p1 = this.players[1];
     const p2 = this.players[2];
 
-    let statusLeft = p1.alive ? '🟢 En jeu' : '💀 Éliminé';
-    if (p1.invincible) {
-      const sec = Math.ceil(Math.max(0, (p1.invincibleExpires - Date.now()) / 1000));
-      statusLeft += ` • 🛡️ Invincible (${sec}s)`;
-    }
-    if (p1.slowFactor && p1.slowFactor > 1) {
-      const sec = Math.ceil(Math.max(0, (p1.slowExpires - Date.now()) / 1000));
-      statusLeft += ` • 🐢 Ralenti (${sec}s)`;
-    }
+    const statusLeft = p1.alive ? '🟢 En jeu' : '💀 Éliminé';
     document.getElementById('status-left').textContent = statusLeft;
     document.getElementById('status-left').className = `status-display ${alive1}`;
 
-    let statusRight = p2.alive ? '🟢 En jeu' : '💀 Éliminé';
-    if (p2.invincible) {
-      const sec = Math.ceil(Math.max(0, (p2.invincibleExpires - Date.now()) / 1000));
-      statusRight += ` • 🛡️ Invincible (${sec}s)`;
-    }
-    if (p2.slowFactor && p2.slowFactor > 1) {
-      const sec = Math.ceil(Math.max(0, (p2.slowExpires - Date.now()) / 1000));
-      statusRight += ` • 🐢 Ralenti (${sec}s)`;
-    }
+    const statusRight = p2.alive ? '🟢 En jeu' : '💀 Éliminé';
     document.getElementById('status-right').textContent = statusRight;
     document.getElementById('status-right').className = `status-display ${alive2}`;
+
+    // Update the fixed overlay with active temporary effects (doesn't affect layout)
+    const overlayLeft = document.getElementById('effectOverlayLeft');
+    const overlayRight = document.getElementById('effectOverlayRight');
+    
+    if (overlayLeft && overlayRight) {
+      const leftBadges = [];
+      const rightBadges = [];
+
+      if (p1.invincible) {
+        const sec = Math.ceil(Math.max(0, (p1.invincibleExpires - Date.now()) / 1000));
+        leftBadges.push(`<span class="effect-badge invincible">🛡️ <span class="time">${sec}s</span></span>`);
+      }
+      if (p1.slowFactor && p1.slowFactor > 1) {
+        const sec = Math.ceil(Math.max(0, (p1.slowExpires - Date.now()) / 1000));
+        leftBadges.push(`<span class="effect-badge slow">🐢 <span class="time">${sec}s</span></span>`);
+      }
+      if (p1.inverted) {
+        const sec = Math.ceil(Math.max(0, (p1.invertedExpires - Date.now()) / 1000));
+        leftBadges.push(`<span class="effect-badge invert">🔀 <span class="time">${sec}s</span></span>`);
+      }
+
+      if (p1.penaltyNotification) {
+        leftBadges.push(`<span class="effect-badge penalty-flash">-1 📍</span>`);
+      }
+      if (p1.stealNotification) {
+        leftBadges.push(`<span class="effect-badge steal-flash">💔 Point!</span>`);
+      }
+
+      if (p2.invincible) {
+        const sec = Math.ceil(Math.max(0, (p2.invincibleExpires - Date.now()) / 1000));
+        rightBadges.push(`<span class="effect-badge invincible">🛡️ <span class="time">${sec}s</span></span>`);
+      }
+      if (p2.slowFactor && p2.slowFactor > 1) {
+        const sec = Math.ceil(Math.max(0, (p2.slowExpires - Date.now()) / 1000));
+        rightBadges.push(`<span class="effect-badge slow">🐢 <span class="time">${sec}s</span></span>`);
+      }
+      if (p2.inverted) {
+        const sec = Math.ceil(Math.max(0, (p2.invertedExpires - Date.now()) / 1000));
+        rightBadges.push(`<span class="effect-badge invert">🔀 <span class="time">${sec}s</span></span>`);
+      }
+
+      if (p2.penaltyNotification) {
+        rightBadges.push(`<span class="effect-badge penalty-flash">-1 📍</span>`);
+      }
+      if (p2.stealNotification) {
+        rightBadges.push(`<span class="effect-badge steal-flash">💔 Point!</span>`);
+      }
+
+      overlayLeft.innerHTML = leftBadges.join('');
+      overlayRight.innerHTML = rightBadges.join('');
+    }
   }
 
   endGame() {
@@ -831,6 +967,18 @@ class SnakeGame {
     }
 
     document.getElementById('resultText').innerHTML = resultText;
+    
+    // Display match log
+    const matchLogDiv = document.getElementById('matchLog');
+    if (matchLogDiv && this.matchLog.length > 0) {
+      const logHtml = this.matchLog.map(entry => 
+        `<div class="match-log-entry"><span class="log-time">${entry.time}</span> <span class="log-message">${entry.message}</span></div>`
+      ).join('');
+      matchLogDiv.innerHTML = logHtml;
+    } else if (matchLogDiv) {
+      matchLogDiv.innerHTML = '<div class="match-log-entry"><span class="log-message">Aucun événement enregistré</span></div>';
+    }
+    
     document.getElementById('resultDisplay').style.display = 'flex';
     
     // Forcer la réactivation des boutons au cas où
