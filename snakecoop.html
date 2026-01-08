@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Snake coop</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="snake.css">
+</head>
+<body>
+
+<header class="topbar">
+  <a href="index.html" class="home-link">← Accueil</a>
+  <h1 style="margin: 0; flex: 1; text-align: center; font-size: 24px;">Snake Coopération</h1>
+</header>
+
+<!-- Barre supérieure pour argents -->
+<div style="display:flex;gap:12px;align-items:center;justify-content:center;padding:8px 18px;">
+  <span class="money" id="money-left">💰 0</span>
+  <span class="money" id="money-right">💰 0</span>
+</div>
+
+<main class="snake-container">
+  <!-- Infos Joueur 1 (gauche) -->
+  <div class="snake-info left">
+    <input id="left-name-input" class="name-input" placeholder="Joueur 1">
+    <label class="color-label">Couleur
+      <input type="color" id="left-color" class="color-input">
+    </label>
+    <div class="score-display" id="score-left">Score: 0</div>
+    <div class="status-display" id="status-left">En attente</div>
+    <button class="btn small gacha-btn" data-player="1" onclick="openGacha(1)">🎰 Gacha</button>
+    <button class="btn small inventory-btn" data-player="1" onclick="openInventory(1)">📦 Inventaire</button>
+  </div>
+
+  <!-- Canvas + Timer (centre) -->
+  <div class="game-area">
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
+
+    <div class="game-overlay" id="gameOverlay">
+      <button id="playBtn" class="btn large">▶ Jouer</button>
+    </div>
+
+    <div class="timer-display" id="timerDisplay">1:00</div>
+    
+    <div class="result-display" id="resultDisplay" style="display: none;">
+      <div id="resultText"></div>
+      <button id="playAgainBtn" class="btn">Rejouer</button>
+    </div>
+  </div>
+
+  <!-- Infos Joueur 2 (droite) -->
+  <div class="snake-info right">
+    <input id="right-name-input" class="name-input" placeholder="Joueur 2">
+    <label class="color-label">Couleur
+      <input type="color" id="right-color" class="color-input">
+    </label>
+    <div class="score-display" id="score-right">Score: 0</div>
+    <div class="status-display" id="status-right">En attente</div>
+    <button class="btn small gacha-btn" data-player="2" onclick="openGacha(2)">🎰 Gacha</button>
+    <button class="btn small inventory-btn" data-player="2" onclick="openInventory(2)">📦 Inventaire</button>
+  </div>
+</main>
+
+<!-- popup partagé (utilisé par openGacha/openInventory) -->
+<div id="popup" class="popup hidden">
+  <div class="popup-content">
+    <h2 id="popup-title"></h2>
+    <div id="popup-body"></div>
+    <button class="btn" onclick="closePopup()">Fermer</button>
+  </div>
+</div>
+
+<!-- charger d'abord gacha_pages (expose addMoney/openGacha/openInventory/equipFont/applyFonts) -->
+<script src="gacha_pages.js"></script>
+<!-- Logique du snake -->
+<script src="snakecoop.js"></script>
+
+</body>
+</html>
