@@ -60,6 +60,9 @@ class SnakeCoopGame {
     // Charger les noms et skins depuis localStorage
     this.loadPlayerData();
     this.applyFonts();
+
+    // S'assurer que les skins équipés sont chargés et affichés
+    this.reloadEquippedSkins();
     
     // Afficher l'argent partagé
     this.updateMoneyDisplay();
@@ -128,6 +131,7 @@ class SnakeCoopGame {
     if (leftColorInput) {
       leftColorInput.addEventListener('input', (e) => {
         localStorage.setItem('color-left', e.target.value);
+        this.players[1].color = e.target.value;
         this.applyFonts();
       });
     }
@@ -135,6 +139,7 @@ class SnakeCoopGame {
     if (rightColorInput) {
       rightColorInput.addEventListener('input', (e) => {
         localStorage.setItem('color-right', e.target.value);
+        this.players[2].color = e.target.value;
         this.applyFonts();
       });
     }
@@ -175,6 +180,15 @@ class SnakeCoopGame {
     
     this.players[1].skinId = skin1;
     this.players[2].skinId = skin2;
+
+    // Update UI small labels so players see equipped skins immediately
+    const leftSkinEl = document.getElementById('skin-left');
+    const rightSkinEl = document.getElementById('skin-right');
+    if (leftSkinEl) leftSkinEl.textContent = `Skin: ${skin1}`;
+    if (rightSkinEl) rightSkinEl.textContent = `Skin: ${skin2}`;
+
+    // helpful console trace
+    console.log('Snake coop skins reloaded:', skin1, skin2);
   }
 
   startGame() {
@@ -516,17 +530,10 @@ class SnakeCoopGame {
       // check if player's new head hits a bot segment
       const hitIndex = bot.snake.findIndex(seg => seg.x === newHead.x && seg.y === newHead.y);
       if (hitIndex !== -1) {
-        if (hitIndex === 0) {
-          // player hit the bot's head -> kill the bot and reward player
-          this.bots.splice(i, 1);
-          player.score += 1;
-          this.spawnDeathEffect(newHead.x, newHead.y, '#dd4444');
-          break;
-        } else {
-          // player hit the bot's body -> player dies
-          player.alive = false;
-          return;
-        }
+        // Player moved into a bot segment -> the player is the percutor => player dies
+        player.alive = false;
+        this.spawnDeathEffect(newHead.x, newHead.y, '#4444dd');
+        return;
       }
     }
 
@@ -614,6 +621,58 @@ class SnakeCoopGame {
     this.updateScoreDisplay();
   }
 
+  // Retourne les couleurs pour un segment selon le skin équipé (mapping étendu)
+  getSegmentColors(skinId, playerNum, index) {
+    const base = this.players[playerNum].color || '#ffffff';
+    if (!skinId) skinId = 'classic';
+
+    const palettes = {
+      classic: { head: base, body: base, eye: '#fff', stroke: 'rgba(255,255,255,0.2)' },
+      green: { head: '#66bb6a', body: '#4caf50', eye: '#fff', stroke: '#2b5d2b' },
+      blue: { head: '#4da6ff', body: '#3b85d6', eye: '#fff', stroke: '#254c7a' },
+      purple: { head: '#a78bfa', body: '#7c3aed', eye: '#fff', stroke: '#4c1d95' },
+      orange: { head: '#ff9f43', body: '#ff7f1a', eye: '#000', stroke: '#7a3f00' },
+      metal: { head: '#bcbcbc', body: '#9aa0a6', eye: '#111', stroke: '#666' },
+      glass: { head: '#b4e0ff', body: '#96c8ff', eye: '#000', stroke: 'rgba(0,0,0,0.12)' },
+      fire: { head: '#ff6b6b', body: '#ff3b3b', eye: '#fff', stroke: '#8b0a0a' },
+      ice: { head: '#b8e6ff', body: '#7fd3ff', eye: '#000', stroke: '#3e9bbb' },
+      marble: { head: '#e6e6e6', body: '#d1d1d1', eye: '#111', stroke: '#a9a9a9' },
+      gold: { head: '#ffd700', body: '#e6c200', eye: '#333', stroke: '#b8860b' },
+      neon: { head: '#39ff14', body: '#2af60f', eye: '#000', stroke: '#0f6200' },
+      glow: { head: '#ffee88', body: '#ffd166', eye: '#000', stroke: '#ffb84d' },
+      aurora: { head: '#aee1ff', body: '#cdb4ff', eye: '#000', stroke: '#8b6bd6' },
+      galaxy: { head: '#9b8cff', body: '#6b4cff', eye: '#fff', stroke: '#2b1b5a' },
+      cosmic: { head: '#7fffd4', body: '#45e6ab', eye: '#000', stroke: '#0b5a42' },
+      lightning: { head: '#fff59d', body: '#fff176', eye: '#000', stroke: '#bfa000' },
+      lava: { head: '#ff7a59', body: '#ff4c00', eye: '#fff', stroke: '#7a1200' },
+      holo: { head: '#cfaaff', body: '#9cf0ff', eye: '#fff', stroke: '#7a5a7a' },
+      void: { head: '#1b1b2f', body: '#0d0d14', eye: '#fff', stroke: '#222233' },
+      phoenix: { head: '#ff9f3f', body: '#ff6b3f', eye: '#fff', stroke: '#a83800' },
+      infinity: { head: '#88f8ff', body: '#66d9ff', eye: '#000', stroke: '#2b6f8b' },
+      neonwave: { head: '#ff6bde', body: '#6bffea', eye: '#000', stroke: '#4b2b6b' },
+      electro: { head: '#ffd34d', body: '#4df0ff', eye: '#000', stroke: '#6b4b00' },
+      prism: { head: '#ff9fbf', body: '#9fffd4', eye: '#000', stroke: '#6b2b4b' },
+      chromaflare: { head: '#ff8f8f', body: '#ffd58f', eye: '#000', stroke: '#6b3b1b' },
+      spectral: { head: '#d8b4ff', body: '#bde4ff', eye: '#000', stroke: '#6b4b7a' },
+      nova: { head: '#ffd6a5', body: '#ffc6ff', eye: '#000', stroke: '#7a4b6b' }
+    };
+
+    // Rainbow/gradient dynamic palettes
+    if (skinId === 'rainbow' || skinId === 'gradient') {
+      const h = (index * 36 + (playerNum === 2 ? 10 : 0)) % 360;
+      return { fill: `hsl(${h} 85% 60%)`, eye: '#fff', stroke: 'rgba(255,255,255,0.2)' };
+    }
+
+    const p = palettes[skinId];
+    if (p) {
+      const fill = index === 0 ? p.head : p.body;
+      return { fill, eye: p.eye, stroke: p.stroke };
+    }
+
+    // Fallback: use player's color
+    return { fill: base, eye: '#fff', stroke: 'rgba(255,255,255,0.2)' };
+  }
+
   drawSnake(playerNum) {
     const player = this.players[playerNum];
     const snake = player.snake;
@@ -621,15 +680,21 @@ class SnakeCoopGame {
     snake.forEach((segment, index) => {
       const x = segment.x * this.gridSize;
       const y = segment.y * this.gridSize;
-      const color = player.alive ? player.color : '#666666';
+
+      const skinId = player.skinId || 'classic';
+      const seg = this.getSegmentColors(skinId, playerNum, index);
+
+      const fillColor = player.alive ? seg.fill : '#666666';
+      const eyeColor = seg.eye;
+      const borderColor = player.alive ? seg.stroke : '#444444';
 
       if (index === 0) {
         // Tête
-        this.ctx.fillStyle = color;
+        this.ctx.fillStyle = fillColor;
         this.ctx.fillRect(x + 1, y + 1, this.gridSize - 2, this.gridSize - 2);
         
         // Yeux
-        this.ctx.fillStyle = '#fff';
+        this.ctx.fillStyle = eyeColor;
         const eyeSize = 3;
         if (player.direction.x > 0) {
           this.ctx.fillRect(x + 12, y + 5, eyeSize, eyeSize);
@@ -646,12 +711,12 @@ class SnakeCoopGame {
         }
       } else {
         // Corps
-        this.ctx.fillStyle = color;
+        this.ctx.fillStyle = fillColor;
         this.ctx.fillRect(x + 1, y + 1, this.gridSize - 2, this.gridSize - 2);
       }
 
       // Bordure
-      this.ctx.strokeStyle = player.alive ? 'rgba(255,255,255,0.2)' : '#444444';
+      this.ctx.strokeStyle = borderColor;
       this.ctx.lineWidth = 1;
       this.ctx.strokeRect(x + 1, y + 1, this.gridSize - 2, this.gridSize - 2);
     });

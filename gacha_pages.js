@@ -278,6 +278,16 @@
     } catch(e) {}
     // refresh quick-inv displays if present
     refreshInPageQuickInv(player);
+
+    // If a Snake instance is active (single or coop), ask it to reload equipped skins
+    try {
+      if (typeof window.snakeGameInstance !== 'undefined' && window.snakeGameInstance && typeof window.snakeGameInstance.reloadEquippedSkins === 'function') {
+        window.snakeGameInstance.reloadEquippedSkins();
+      }
+      if (typeof window.snakeCoopGameInstance !== 'undefined' && window.snakeCoopGameInstance && typeof window.snakeCoopGameInstance.reloadEquippedSkins === 'function') {
+        window.snakeCoopGameInstance.reloadEquippedSkins();
+      }
+    } catch(e) {}
   };
 
   window.applyFonts = function(){
@@ -317,10 +327,15 @@
     const popup = document.getElementById('popup');
     if (popup) popup.classList.add('hidden');
     
-    // Recharger les skins du Snake s'il y a une instance active
-    if (typeof window.snakeGameInstance !== 'undefined' && window.snakeGameInstance) {
-      window.snakeGameInstance.reloadEquippedSkins();
-    }
+    // Recharger les skins du Snake s'il y a une instance active (single-player et coopératif)
+    try {
+      if (typeof window.snakeGameInstance !== 'undefined' && window.snakeGameInstance && typeof window.snakeGameInstance.reloadEquippedSkins === 'function') {
+        window.snakeGameInstance.reloadEquippedSkins();
+      }
+      if (typeof window.snakeCoopGameInstance !== 'undefined' && window.snakeCoopGameInstance && typeof window.snakeCoopGameInstance.reloadEquippedSkins === 'function') {
+        window.snakeCoopGameInstance.reloadEquippedSkins();
+      }
+    } catch(e) {}
   };
 
   /* ---------- in-page openGacha / openInventory (popup-only) ---------- */
